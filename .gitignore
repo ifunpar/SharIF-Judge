@@ -20,3 +20,5 @@ tester/moss
 
 # Ignore Testing Assignment
 assignments/
+
+application/logs
