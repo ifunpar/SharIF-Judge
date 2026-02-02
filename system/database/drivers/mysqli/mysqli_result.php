@@ -2,26 +2,38 @@
 /**
  * CodeIgniter
  *
- * An open source application development framework for PHP 5.2.4 or newer
+ * An open source application development framework for PHP
  *
- * NOTICE OF LICENSE
+ * This content is released under the MIT License (MIT)
  *
- * Licensed under the Open Software License version 3.0
+ * Copyright (c) 2019 - 2022, CodeIgniter Foundation
  *
- * This source file is subject to the Open Software License (OSL 3.0) that is
- * bundled with this package in the files license.txt / license.rst.  It is
- * also available through the world wide web at this URL:
- * http://opensource.org/licenses/OSL-3.0
- * If you did not receive a copy of the license and are unable to obtain it
- * through the world wide web, please send an email to
- * licensing@ellislab.com so we can send you a copy immediately.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * @package		CodeIgniter
- * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
- * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
- * @link		http://codeigniter.com
- * @since		Version 1.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package	CodeIgniter
+ * @author	EllisLab Dev Team
+ * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
+ * @copyright	Copyright (c) 2014 - 2019, British Columbia Institute of Technology (https://bcit.ca/)
+ * @copyright	Copyright (c) 2019 - 2022, CodeIgniter Foundation (https://codeigniter.com/)
+ * @license	https://opensource.org/licenses/MIT	MIT License
+ * @link	https://codeigniter.com
+ * @since	Version 1.3.0
  * @filesource
  */
 defined('BASEPATH') OR exit('No direct script access allowed');
@@ -31,10 +43,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  *
  * This class extends the parent result class: CI_DB_result
  *
+ * @package		CodeIgniter
+ * @subpackage	Drivers
  * @category	Database
  * @author		EllisLab Dev Team
- * @link		http://codeigniter.com/user_guide/database/
- * @since	1.3
+ * @link		https://codeigniter.com/userguide3/database/
  */
 class CI_DB_mysqli_result extends CI_DB_result {
 
@@ -100,13 +113,59 @@ class CI_DB_mysqli_result extends CI_DB_result {
 		{
 			$retval[$i]			= new stdClass();
 			$retval[$i]->name		= $field_data[$i]->name;
-			$retval[$i]->type		= $field_data[$i]->type;
+			$retval[$i]->type		= static::_get_field_type($field_data[$i]->type);
 			$retval[$i]->max_length		= $field_data[$i]->max_length;
-			$retval[$i]->primary_key	= (int) ($field_data[$i]->flags & 2);
+			$retval[$i]->primary_key	= (int) ($field_data[$i]->flags & MYSQLI_PRI_KEY_FLAG);
 			$retval[$i]->default		= $field_data[$i]->def;
 		}
 
 		return $retval;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Get field type
+	 *
+	 * Extracts field type info from the bitflags returned by
+	 * mysqli_result::fetch_fields()
+	 *
+	 * @used-by	CI_DB_mysqli_result::field_data()
+	 * @param	int	$type
+	 * @return	string
+	 */
+	private static function _get_field_type($type)
+	{
+		static $map;
+		isset($map) OR $map = array(
+			MYSQLI_TYPE_DECIMAL     => 'decimal',
+			MYSQLI_TYPE_BIT         => 'bit',
+			MYSQLI_TYPE_TINY        => 'tinyint',
+			MYSQLI_TYPE_SHORT       => 'smallint',
+			MYSQLI_TYPE_INT24       => 'mediumint',
+			MYSQLI_TYPE_LONG        => 'int',
+			MYSQLI_TYPE_LONGLONG    => 'bigint',
+			MYSQLI_TYPE_FLOAT       => 'float',
+			MYSQLI_TYPE_DOUBLE      => 'double',
+			MYSQLI_TYPE_TIMESTAMP   => 'timestamp',
+			MYSQLI_TYPE_DATE        => 'date',
+			MYSQLI_TYPE_TIME        => 'time',
+			MYSQLI_TYPE_DATETIME    => 'datetime',
+			MYSQLI_TYPE_YEAR        => 'year',
+			MYSQLI_TYPE_NEWDATE     => 'date',
+			MYSQLI_TYPE_INTERVAL    => 'interval',
+			MYSQLI_TYPE_ENUM        => 'enum',
+			MYSQLI_TYPE_SET         => 'set',
+			MYSQLI_TYPE_TINY_BLOB   => 'tinyblob',
+			MYSQLI_TYPE_MEDIUM_BLOB => 'mediumblob',
+			MYSQLI_TYPE_BLOB        => 'blob',
+			MYSQLI_TYPE_LONG_BLOB   => 'longblob',
+			MYSQLI_TYPE_STRING      => 'char',
+			MYSQLI_TYPE_VAR_STRING  => 'varchar',
+			MYSQLI_TYPE_GEOMETRY    => 'geometry'
+		);
+
+		return isset($map[$type]) ? $map[$type] : $type;
 	}
 
 	// --------------------------------------------------------------------
@@ -172,6 +231,3 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	}
 
 }
-
-/* End of file mysqli_result.php */
-/* Location: ./system/database/drivers/mysqli/mysqli_result.php */

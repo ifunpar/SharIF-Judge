@@ -295,17 +295,38 @@ $config['encryption_key'] = 'bw92oJKjOqNM4XhyiSF8Q0Ra75zkpdYu';
 | 'sess_time_to_update'		= how many seconds between CI refreshing Session Information
 |
 */
-$config['sess_driver']			= 'cookie';
-$config['sess_valid_drivers']	= array();
-$config['sess_cookie_name']		= 'shjsession';
-$config['sess_expiration']		= 7200;
-$config['sess_expire_on_close']	= FALSE;
-$config['sess_encrypt_cookie']	= TRUE;
-$config['sess_use_database']	= TRUE;
-$config['sess_table_name']		= 'sessions';
-$config['sess_match_ip']		= FALSE;
-$config['sess_match_useragent']	= TRUE;
-$config['sess_time_to_update']	= 300;
+// $config['sess_driver']			= 'cookie';
+// $config['sess_valid_drivers']	= array();
+// $config['sess_cookie_name']		= 'shjsession';
+// $config['sess_expiration']		= 7200;
+// $config['sess_expire_on_close']	= FALSE;
+// $config['sess_encrypt_cookie']	= TRUE;
+// $config['sess_use_database']	= TRUE;
+// $config['sess_table_name']		= 'sessions';
+// $config['sess_match_ip']		= FALSE;
+// $config['sess_match_useragent']	= TRUE;
+// $config['sess_time_to_update']	= 300;
+
+
+// CHANGED: 'cookie' is deleted. Use 'files' for now to get the site up.
+$config['sess_driver'] = 'files'; 
+
+// CHANGED: We need a valid path. This uses the system temp directory.
+$config['sess_save_path'] = sys_get_temp_dir(); 
+
+$config['sess_cookie_name'] = 'shjsession';
+$config['sess_expiration'] = 7200;
+$config['sess_expire_on_close'] = FALSE;
+// CHANGED: This is now handled automatically by the driver
+$config['sess_encrypt_cookie'] = FALSE; 
+// CHANGED: These are for the Database driver only. 
+// Since your DB table structure is likely old (CI2 style), 
+// we DISABLE database sessions for now to prevent SQL errors.
+$config['sess_use_database'] = FALSE; 
+// $config['sess_table_name'] = 'sessions';
+$config['sess_match_ip'] = FALSE;
+$config['sess_match_useragent'] = TRUE;
+$config['sess_time_to_update'] = 300;
 
 /*
 |--------------------------------------------------------------------------
@@ -445,7 +466,7 @@ $config['rewrite_short_tags'] = FALSE;
 | Comma-separated:	'10.0.1.200,192.168.5.0/24'
 | Array:		array('10.0.1.200', '192.168.5.0/24')
 */
-$config['proxy_ips'] = '';
+$config['proxy_ips'] = '127.0.0.1,::1,172.16.0.0/12,192.168.0.0/16,10.0.0.0/8';
 
 /*
 | Adding up composer support, so we dont have to fetch the packages everytime it
