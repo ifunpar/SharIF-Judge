@@ -64,7 +64,7 @@ class Profile extends CI_Controller
 			'display_name' => $user->display_name,
 			'role' => $user->role,
 			'form_status' => $this->form_status,
-			'lock_student_display_name' => $this->settings_model->get_setting(lock_student_display_name),
+			'lock_student_display_name' => $this->settings_model->get_setting('lock_student_display_name'),
 		);
 
 		$this->twig->display('pages/profile.twig', $data);

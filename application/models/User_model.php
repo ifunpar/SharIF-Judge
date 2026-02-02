@@ -418,7 +418,7 @@ class User_model extends CI_Model
 		$username = $the_user->username;
 
 		$display_name = $this->input->post('display_name');
-		$locked = $this->settings_model->get_setting(lock_student_display_name);
+		$locked = $this->settings_model->get_setting('lock_student_display_name');
 		if ($locked == 1) {
 			$display_name = $the_user->display_name;
 		}

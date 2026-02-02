@@ -209,7 +209,17 @@ class CI_DB_mysqli_driver extends CI_DB {
 	 */
 	protected function _execute($sql)
 	{
-		return @$this->conn_id->query($this->_prep_query($sql));
+		try {
+			return $this->conn_id->query($this->_prep_query($sql));
+		} catch (mysqli_sql_exception $e) {
+			// If table doesn't exist during session init, return false gracefully
+			if (strpos($e->getMessage(), "doesn't exist") !== false) {
+				log_message('debug', 'Table does not exist: ' . $e->getMessage());
+				return false;
+			}
+			// Re-throw other exceptions
+			throw $e;
+		}
 	}
 
 	// --------------------------------------------------------------------

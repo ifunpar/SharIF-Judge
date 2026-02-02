@@ -270,16 +270,16 @@ class Submit extends CI_Controller
 		if(!write_file($input_path, ' ')){}
 		if(!write_file($output_path, ' ')){}
 		if (!file_exists($file_path)){
-			$response = json_encode(array(content=>'', message=>'No saved file'));
+			$response = json_encode(array('content'=>'', 'message'=>'No saved file'));
 		}
 		else{
 			$file_content = file_get_contents($file_path);
 			if ($file_content === FALSE){
-				$response = json_encode(array(content=>'', message=>'Unable to load'));
+				$response = json_encode(array('content'=>'', 'message'=>'Unable to load'));
 			}
 			else{
 				addslashes($file_content);
-				$response = json_encode(array(content=>$file_content, message=>'Loaded'));
+				$response = json_encode(array('content'=>$file_content, 'message'=>'Loaded'));
 			}
 		}
 		echo $response;
@@ -305,34 +305,34 @@ class Submit extends CI_Controller
 
 		$this->load->helper('file');
 		if (!write_file($file_path, $data)){
-			$response = json_encode(array(status=>FALSE, message=>'Unable to save'));
+			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to save'));
 			echo $response;
 		}
 		else{
-			$response = json_encode(array(status=>TRUE, message=>'Saved'));
+			$response = json_encode(array('status'=>TRUE, 'message'=>'Saved'));
 			if($type === FALSE){
 				echo $response;
 			}
 			else{
 				$now = shj_now();
 				if ( $this->queue_model->in_queue($this->user->username,$this->user->selected_assignment['id'], $this->problem['id'])){
-					$response = json_encode(array(status=>FALSE, message=>'You have already submitted for this problem. Your last submission is still in queue.'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'You have already submitted for this problem. Your last submission is still in queue.'));
 					echo $response;
 				}
 				else if ($this->user->level==0 && !$this->user->selected_assignment['open']){
-					$response = json_encode(array(status=>FALSE, message=>'Selected assignment has been closed.'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'Selected assignment has been closed.'));
 					echo $response;
 				}
 				else if ($now < strtotime($this->user->selected_assignment['start_time'])){
-					$response = json_encode(array(status=>FALSE, message=>'Selected assignment has not started.'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'Selected assignment has not started.'));
 					echo $response;
 				}
 				else if ($now > strtotime($this->user->selected_assignment['finish_time'])+$this->user->selected_assignment['extra_time']){
-					$response = json_encode(array(status=>FALSE, message=>'Selected assignment has finished.'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'Selected assignment has finished.'));
 					echo $response;
 				}
 				else if ( ! $this->assignment_model->is_participant($this->user->selected_assignment['participants'],$this->user->username)){
-					$response = json_encode(array(status=>FALSE, message=>'You are not registered for submitting.'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'You are not registered for submitting.'));
 					echo $response;
 				}
 				else{
@@ -342,7 +342,7 @@ class Submit extends CI_Controller
 					else if($type === 'execute'){
 						$editor_input =  $_POST['editor_input'];
 						if (!write_file($input_path, $editor_input)){
-							$response = json_encode(array(status=>FALSE, message=>'Unable to write input file'));
+							$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to write input file'));
 							echo $response;
 						}
 						else{
@@ -377,7 +377,7 @@ class Submit extends CI_Controller
 			}
 
 		if (!write_file($file_path, $data)){
-			$response = json_encode(array(status=>FALSE, message=>'Unable to submit'));
+			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to submit'));
 		}
 		else{
 			$this->load->model('submit_model');
@@ -404,7 +404,7 @@ class Submit extends CI_Controller
 				$this->submit_model->add_upload_only($submit_info);
 			}
 
-			$response = json_encode(array(status=>TRUE, message=>"Submitted"));
+			$response = json_encode(array('status'=>TRUE, 'message'=>"Submitted"));
 		}
 		echo $response;
 	}
@@ -424,7 +424,7 @@ class Submit extends CI_Controller
 		$output_path = $user_dir.'/'.EDITOR_OUT_NAME.'.'.EDITOR_FILE_EXT;
 
 		if (!write_file($file_path, $data)){
-			$response = json_encode(array(status=>FALSE, message=>'Unable to execute', debug=>$file_path));
+			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to execute', debug=>$file_path));
 		}
 		else{
 			$submit_info = array(
@@ -442,15 +442,15 @@ class Submit extends CI_Controller
 
 			if($this->queue_model->add_to_queue_exec($submit_info)){
 				if (!write_file($output_path, 'Queueing...')){
-					$response = json_encode(array(status=>FALSE, message=>'Unable to write output file'));
+					$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to write output file'));
 				}
 				else{
 					process_the_queue();
-					$response = json_encode(array(status=>TRUE, message=>'Executing'));
+					$response = json_encode(array('status'=>TRUE, 'message'=>'Executing'));
 				}
 			}
 			else{
-				$response = json_encode(array(status=>FALSE, message=>'Still in queue'));
+				$response = json_encode(array('status'=>FALSE, 'message'=>'Still in queue'));
 			}
 		}
 		echo $response;
@@ -467,21 +467,21 @@ class Submit extends CI_Controller
 		$file_path = $user_dir.'/'.EDITOR_OUT_NAME.'.'.EDITOR_FILE_EXT;
 
 		if (!file_exists($file_path)){
-			$response = json_encode(array(status=>FALSE, content=>''));
+			$response = json_encode(array('status'=>FALSE, 'content'=>''));
 		}
 		else{
 			$this->load->helper('file');
 			$file_content = file_get_contents($file_path);
 			if ($file_content === FALSE){
-				$response = json_encode(array(status=>FALSE, content=>''));
+				$response = json_encode(array('status'=>FALSE, 'content'=>''));
 			}
 			else{
 				$complete_status = strpos($file_content, 'Total Execution Time');
 				if($complete_status === FALSE){
-					$response = json_encode(array(status=>FALSE, content=>$file_content));
+					$response = json_encode(array('status'=>FALSE, 'content'=>$file_content));
 				}
 				else{
-					$response = json_encode(array(status=>TRUE, content=>$file_content));
+					$response = json_encode(array('status'=>TRUE, 'content'=>$file_content));
 				}
 			}
 		}
