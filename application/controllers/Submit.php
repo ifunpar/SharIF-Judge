@@ -33,8 +33,16 @@ class Submit extends CI_Controller
 		$extra_time = $this->user->selected_assignment['extra_time'];
 		$delay = shj_now()-strtotime($this->user->selected_assignment['finish_time']);;
 		ob_start();
-		if ( eval($this->user->selected_assignment['late_rule']) === FALSE )
+		try {
+			// Attempt to run the rule
+			if ( eval($this->user->selected_assignment['late_rule']) === FALSE ) {
+				$coefficient = "error";
+			}
+		} catch (ParseError $e) {
+			// PHP 8.1 caught a syntax error in the rule text
 			$coefficient = "error";
+			log_message('error', 'Late Rule Error: ' . $e->getMessage());
+		}
 		if (!isset($coefficient))
 			$coefficient = "error";
 		ob_end_clean();

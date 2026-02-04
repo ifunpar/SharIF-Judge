@@ -53,7 +53,7 @@ class Assignment_model extends CI_Model
 			'start_time' => date('Y-m-d H:i:s', strtotime($this->input->post('start_time'))),
 			'finish_time' => date('Y-m-d H:i:s', strtotime($this->input->post('finish_time'))),
 			'extra_time' => $extra_time*60,
-			'late_rule' => $this->input->post('late_rule'),
+			'late_rule' => $this->input->post('late_rule',FALSE),
 			'participants' => $this->input->post('participants'),
 			'archived_assignment' => $archived_assignment
 		);
@@ -449,8 +449,29 @@ class Assignment_model extends CI_Model
 		foreach ($submissions as $i => $item) {
 			$delay = strtotime($item['time'])-$finish_time;
 			ob_start();
-			if ( eval($new_late_rule) === FALSE )
-				$coefficient = "error";
+			$coefficient = "error"; // Default to error first for safety
+
+			try {
+				// Try to run the rule
+				$eval_result = eval($item['late_rule']);
+				
+				// If eval ran successfully, it returns NULL (usually), 
+				// unless the code explicitly returns something.
+				// But importantly: if we are here, NO syntax error occurred.
+				
+				// Check if the variable $coefficient was actually set by the eval'd code
+				if (isset($coefficient) && is_numeric($coefficient)) {
+					// Success! The rule calculated a number.
+				} else {
+					$coefficient = "error";
+				}
+
+			} catch (ParseError $e) {
+				// CATCH THE CRASH HERE
+				// This handles the "Syntax error, unexpected token ';'"
+				$coefficient = "error"; 
+				log_message('error', 'Late Rule Syntax Error: ' . $e->getMessage());
+			}
 			if (!isset($coefficient))
 				$coefficient = "error";
 			ob_end_clean();
