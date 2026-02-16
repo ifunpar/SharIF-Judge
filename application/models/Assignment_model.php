@@ -453,7 +453,8 @@ class Assignment_model extends CI_Model
 
 			try {
 				// Try to run the rule
-				$eval_result = eval($item['late_rule']);
+				//$eval_result = eval($item['late_rule']);
+				$eval_result = eval($new_late_rule);
 				
 				// If eval ran successfully, it returns NULL (usually), 
 				// unless the code explicitly returns something.
