@@ -32,8 +32,13 @@ any other GPL-like (LGPL, GPL2) License.
     $Id: CHAP.php 302857 2010-08-28 21:12:59Z mbretter $
 
 This version of CHAP.php has been modified by Drew Phillips for dapphp/radius.
-Modifications remove the PEAR dependency, change from PHP4 OOP to PHP5, and...
+Modifications remove the PEAR dependency, change from PHP4 OOP to PHP5, and
+mcrypt functions have been replaced with openssl_* functions.
+
 Changes are all commented inline throughout the source.
+
+    $Id: Pear_CHAP.php 2.5.2 2018-01-25  03:30:29Z dapphp $
+
 */
 
 // require_once 'PEAR.php'; // removed for dapphp/radius
@@ -47,7 +52,6 @@ Changes are all commented inline throughout the source.
 * @package Crypt_CHAP
 * @author  Michael Bretterklieber <michael@bretterklieber.com>
 * @access  public
-* @version $Revision: 302857 $
 */
 
 /**
@@ -174,6 +178,8 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
     protected $flags = 1;
     //var $flags = 1;  // removed for dapphp/radius
 
+    protected $useMcrypt = false; // added for dapphp/radius (php 5.3 must use mcrypt)
+
     /**
      * Constructor
      *
@@ -188,6 +194,22 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
         // removed for dapphp/radius
         //$this->Crypt_CHAP();
         //$this->loadExtension('hash');
+
+        // added openssl & mcrypt check for dapphp/radius
+        if (!extension_loaded('openssl') && !extension_loaded('mcrypt')) {
+            throw new \Exception("openssl and mcrypt are not installed; cannot use Radius MSCHAP functions");
+        }
+
+        // Added mcrypt check for PHP 5.3 for dapphp/radius
+        // OPENSSL_RAW_DATA and OPENSSL_ZERO_PADDING are required but not
+        // supported by ext/openssl until PHP 5.4.
+        if (version_compare(PHP_VERSION, '5.4') < 0) {
+            if (!extension_loaded('mcrypt')) {
+                throw new \Exception("Radius MSCHAP functions require mcrypt extension for PHP 5.3");
+            }
+
+            $this->useMcrypt = true;
+        }
     }
 
     /**
@@ -216,13 +238,18 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
     //function str2unicode($str)  // removed for dapphp/radius
     public function str2unicode($str)
     {
-        $uni = '';
-        $str = (string) $str;
-        for ($i = 0; $i < strlen($str); $i++) {
-            $a = ord($str{$i}) << 8;
-            $uni .= sprintf("%X", $a);
+
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($str, 'UTF-16LE');
+        } else {
+            $uni = '';
+            $str = (string) $str;
+            for ($i = 0; $i < strlen($str); $i++) {
+                $a = ord($str[$i]) << 8;
+                $uni .= sprintf("%X", $a);
+            }
+            return pack('H*', $uni);
         }
-        return pack('H*', $uni);
     }
 
     /**
@@ -279,27 +306,37 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
             $hash = $this->ntPasswordHash();
         }
 
-        while (strlen($hash) < 21) {
-            $hash .= "\0";
+        $hash = str_pad($hash, 21, "\0");
+
+        if (extension_loaded('openssl') && $this->useMcrypt === false) {
+            // added openssl routines for dapphp/radius
+            $key   = $this->_desAddParity(substr($hash, 0, 7));
+            $resp1 = openssl_encrypt($this->challenge, 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+
+            $key   = $this->_desAddParity(substr($hash, 7, 7));
+            $resp2 = openssl_encrypt($this->challenge, 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+
+            $key   = $this->_desAddParity(substr($hash, 14, 7));
+            $resp3 = openssl_encrypt($this->challenge, 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+        } else {
+            $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
+            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+            $key = $this->_desAddParity(substr($hash, 0, 7));
+            mcrypt_generic_init($td, $key, $iv);
+            $resp1 = mcrypt_generic($td, $this->challenge);
+            mcrypt_generic_deinit($td);
+
+            $key = $this->_desAddParity(substr($hash, 7, 7));
+            mcrypt_generic_init($td, $key, $iv);
+            $resp2 = mcrypt_generic($td, $this->challenge);
+            mcrypt_generic_deinit($td);
+
+            $key = $this->_desAddParity(substr($hash, 14, 7));
+            mcrypt_generic_init($td, $key, $iv);
+            $resp3 = mcrypt_generic($td, $this->challenge);
+            mcrypt_generic_deinit($td);
+            mcrypt_module_close($td);
         }
-
-        $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
-        $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        $key = $this->_desAddParity(substr($hash, 0, 7));
-        mcrypt_generic_init($td, $key, $iv);
-        $resp1 = mcrypt_generic($td, $this->challenge);
-        mcrypt_generic_deinit($td);
-
-        $key = $this->_desAddParity(substr($hash, 7, 7));
-        mcrypt_generic_init($td, $key, $iv);
-        $resp2 = mcrypt_generic($td, $this->challenge);
-        mcrypt_generic_deinit($td);
-
-        $key = $this->_desAddParity(substr($hash, 14, 7));
-        mcrypt_generic_init($td, $key, $iv);
-        $resp3 = mcrypt_generic($td, $this->challenge);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
 
         return $resp1 . $resp2 . $resp3;
     }
@@ -332,14 +369,23 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
     //function _desHash($plain)  // removed for dapphp/radius
     private function _desHash($plain)
     {
-        $key = $this->_desAddParity($plain);
-        $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
-        $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, $key, $iv);
-        $hash = mcrypt_generic($td, 'KGS!@#$%');
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        return $hash;
+        if (extension_loaded('openssl') && $this->useMcrypt === false) {
+            // added openssl routines for dapphp/radius
+            $key = $this->_desAddParity($plain);
+            $hash = openssl_encrypt('KGS!@#$%', 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+
+            return $hash;
+        } else {
+            $key = $this->_desAddParity($plain);
+            $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
+            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+            mcrypt_generic_init($td, $key, $iv);
+            $hash = mcrypt_generic($td, 'KGS!@#$%');
+            mcrypt_generic_deinit($td);
+            mcrypt_module_close($td);
+
+            return $hash;
+        }
     }
 
     /**
@@ -350,7 +396,7 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
      * @return string
      */
     //function _desAddParity($key)  // removed for dapphp/radius
-    private function _desAddParity($key)
+    protected function _desAddParity($key)
     {
         static $odd_parity = array(
                 1,  1,  2,  2,  4,  4,  7,  7,  8,  8, 11, 11, 13, 13, 14, 14,
@@ -372,7 +418,7 @@ class Crypt_CHAP_MSv1 extends Crypt_CHAP
 
         $bin = '';
         for ($i = 0; $i < strlen($key); $i++) {
-            $bin .= sprintf('%08s', decbin(ord($key{$i})));
+            $bin .= sprintf('%08s', decbin(ord($key[$i])));
         }
 
         $str1 = explode('-', substr(chunk_split($bin, 7, '-'), 0, -1));
@@ -493,4 +539,124 @@ class Crypt_CHAP_MSv2 extends Crypt_CHAP_MSv1
         $this->challenge = $this->challengeHash();
         return $this->_challengeResponse();
     }
+
+    /**
+     * Generates the encrypted new password.
+     *
+     * @access public
+     * @param  string  $newPassword The new plain text password
+     * @param  string  $oldPassword The old plain text password
+     * @return string  EncryptedPwBlock
+     */
+    public function newPasswordEncryptedWithOldNtPasswordHash($newPassword, $oldPassword)
+    {
+        $passwordHash = $this->ntPasswordHash($oldPassword);
+        return $this->encryptPwBlockWithPasswordHash($this->str2unicode($newPassword), $passwordHash);
+    }
+
+    /**
+     * Generates PwBlock
+     *
+     * @access public
+     * @param  string  $password     New password
+     * @param  string  $passwordHash Old password hash
+     * @return string  PwBlock
+     */
+    public function encryptPwBlockWithPasswordHash($password, $passwordHash)
+    {
+        // [516=2*256+4] unicode(2) maxpasslength(256) passlength(4)
+        $clearPwBlock = random_bytes(516);
+        $pwSize       = strlen($password);
+        $pwOffset     = strlen($clearPwBlock) - $pwSize - 4;
+
+        $clearPwBlock = substr_replace($clearPwBlock, $password, $pwOffset, $pwSize);
+
+        $clearPwBlock = substr_replace($clearPwBlock, pack("V", $pwSize), -4, 4);
+
+        return $this->rc4($passwordHash, $clearPwBlock);
+    }
+
+    /**
+     * RC4 symmetric cipher encryption/decryption
+     *
+     * @access public
+     * @param  string key - secret key for encryption/decryption
+     * @param  string str - string to be encrypted/decrypted
+     * @return string
+     */
+    public function rc4($key, $str)
+    {
+        $s = array();
+        for ($i = 0; $i < 256; $i++) {
+            $s[$i] = $i;
+        }
+        $j = 0;
+        for ($i = 0; $i < 256; $i++) {
+            $j = ($j + $s[$i] + ord($key[$i % strlen($key)])) % 256;
+            $x = $s[$i];
+            $s[$i] = $s[$j];
+            $s[$j] = $x;
+        }
+        $i = 0;
+        $j = 0;
+        $res = '';
+        for ($y = 0; $y < strlen($str); $y++) {
+            $i = ($i + 1) % 256;
+            $j = ($j + $s[$i]) % 256;
+            $x = $s[$i];
+            $s[$i] = $s[$j];
+            $s[$j] = $x;
+            $res .= $str[$y] ^ chr($s[($s[$i] + $s[$j]) % 256]);
+        }
+        return $res;
+    }
+
+    /**
+     * ?
+     *
+     * @access public
+     * @param  string  $newPassword The new plain text password
+     * @param  string  $oldPassword The old plain text password
+     * @return string  EncryptedPasswordHash
+     */
+    public function oldNtPasswordHashEncryptedWithNewNtPasswordHash($newPassword, $oldPassword)
+    {
+        $oldPasswordHash = $this->ntPasswordHash($oldPassword);
+        $newPasswordHash = $this->ntPasswordHash($newPassword);
+        return $this->ntPasswordHashEncryptedWithBlock($oldPasswordHash, $newPasswordHash);
+    }
+
+    /**
+     * ?
+     *
+     * @access public
+     * @param  string  $passwordHash Password hash to encrypt
+     * @param  string  $block        Key to use for encryption
+     * @return string
+     */
+    public function ntPasswordHashEncryptedWithBlock($passwordHash, $block)
+    {
+        if (extension_loaded('openssl') && $this->useMcrypt === false) {
+            $key   = $this->_desAddParity(substr($block, 0, 7));
+            $resp1 = openssl_encrypt(substr($passwordHash, 0, 8), 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+
+            $key   = $this->_desAddParity(substr($block, 7, 7));
+            $resp2 = openssl_encrypt(substr($passwordHash, 8, 8), 'des-ecb', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
+        } else {
+            $td = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
+            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+
+            $key = $this->_desAddParity(substr($block, 0, 7));
+            mcrypt_generic_init($td, $key, $iv);
+            $resp1 = mcrypt_generic($td, substr($passwordHash, 0, 8));
+            mcrypt_generic_deinit($td);
+
+            $key   = $this->_desAddParity(substr($block, 7, 7));
+            mcrypt_generic_init($td, $key, $iv);
+            $resp2 = mcrypt_generic($td, substr($passwordHash, 8, 8));
+            mcrypt_generic_deinit($td);
+        }
+        return $resp1 . $resp2;
+    }
+
 }

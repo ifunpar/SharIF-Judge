@@ -1,19 +1,17 @@
+<p align="center">
+<a href="https://app.travis-ci.com/github/dapphp/radius"><img src="https://app.travis-ci.com/dapphp/radius.svg?branch=master" alt="Build Status"></a>
+<a href="https://packagist.org/packages/dapphp/radius"><img src="https://poser.pugx.org/dapphp/radius/downloads" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/dapphp/radius"><img src="https://poser.pugx.org/dapphp/radius/v/stable" alt="Latest Stable Version"></a>
+</p>
+
 ## Name:
 
 **Dapphp\Radius** - A pure PHP RADIUS client based on the SysCo/al implementation
-
-## Version:
-
-**2.5.1**
 
 ## Author:
 
 * Drew Phillips <drew@drew-phillips.com>
 * SysCo/al <developer@sysco.ch> (http://developer.sysco.ch/php/)
-
-## Requirements:
-
-* PHP 5.3 or greater
 
 ## Description:
 
@@ -22,6 +20,7 @@ a RADIUS server in PHP.  It currently supports basic RADIUS auth using PAP,
 CHAP (MD5), MSCHAP v1, and EAP-MSCHAP v2.  The current 2.5.x branch is tested
 to work with the following RADIUS servers:
 
+- Microsoft Windows Server 2019 Network Policy Server
 - Microsoft Windows Server 2016 Network Policy Server
 - Microsoft Windows Server 2012 Network Policy Server
 - FreeRADIUS 2 and above
@@ -36,7 +35,8 @@ PAP authentication has been tested on:
 - WinRadius
 - ZyXEL ZyWALL OTP
 
-The PHP mcrypt extension is required if using MSCHAP v1 or v2.
+The PHP openssl extension is required if using MSCHAP v1 or v2.  For older PHP
+versions that have mcrypt without openssl support, then mcrypt is used.
 
 ## Installation:
 
@@ -53,8 +53,19 @@ then you can use the class.
 
 ## Examples:
 
-See the `examples/` directory for working examples (change the server address
-and credentials to test).
+See the `examples/` directory for working examples. The RADIUS server address, secret, and credentials are read from
+environment variables and default to:
+
+    RADIUS_SERVER_ADDR=192.168.0.20
+    RADIUS_USER=nemo
+    RADIUS_PASS=arctangent
+    RADIUS_SECRET=xyzzy5461
+
+To print RADIUS debug info, specify the `-v` option.
+
+Example:
+
+    RADIUS_SERVER_ADDR=10.0.100.1 RADIUS_USER=radtest php example/client.php -v
 
 ## Synopsis:
 
@@ -82,7 +93,7 @@ and credentials to test).
 	$authenticated = $client->accessRequest($username); // authenticate, don't specify pw here
 
 	// MSCHAP v1 authentication
-	$client->setMSChapPassword($password); // set ms chap password (uses mcrypt)
+	$client->setMSChapPassword($password); // set ms chap password (uses openssl or mcrypt)
 	$authenticated = $client->accessRequest($username);
 
 	// EAP-MSCHAP v2 authentication
@@ -102,6 +113,20 @@ and credentials to test).
 
 ## Advanced Usage:
 
+	// Authenticating against a RADIUS cluster (each server needs the same secret).
+	// Each server in the list is tried until auth success or failure.  The
+	// next server is tried on timeout or other error.
+	// Set the secret and any required attributes first.
+
+	$servers = [ 'server1.radius.domain', 'server2.radius.domain' ];
+	// or
+	$servers = gethostbynamel("radius.site.domain"); // gets list of IPv4 addresses to a given host
+
+	$authenticated = $client->accessRequestList($servers, $username, $password);
+	// or
+	$authenticated = $client->accessRequestEapMsChapV2List($servers, $username, $password);
+
+
 	// Setting vendor specific attributes
 	// Many vendor IDs are available in \Dapphp\Radius\VendorId
 	// e.g. \Dapphp\Radius\VendorId::MICROSOFT
@@ -119,6 +144,10 @@ and credentials to test).
 	// Shows what attributes are sent and received, and info about the request/response
 
 
+## Requirements:
+
+* PHP 5.3 or greater
+
 ## TODO:
 
 - Set attributes by name, rather than number
@@ -133,7 +162,7 @@ and credentials to test).
     (http://www.sysco.ch/)
     All rights reserved.
 
-    Copyright (c) 2016, Drew Phillips
+    Copyright (c) 2018, Drew Phillips
     (https://drew-phillips.com)
 
     Pure PHP radius class is free software; you can redistribute it and/or

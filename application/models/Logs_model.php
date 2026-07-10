@@ -38,11 +38,13 @@ class Logs_model extends CI_Model
 				$this->db->delete('logins');
 			}
 		}
-
+		$current_time = shj_now_str();
+		
 		$result = $this->db->query("SELECT * FROM shj_logins WHERE username='".$username."' AND ip_address!='".$ip_adrress."' ORDER BY timestamp DESC")->row();
 		if ($result === NULL) {
 			$logins = array(
 				'username' => $username,
+				'timestamp' => $current_time,
 				'ip_address' => $ip_adrress
 			);
 			$this->db->insert('logins', $logins);
@@ -51,6 +53,7 @@ class Logs_model extends CI_Model
 			$get_last_login_id = $result -> login_id;
 			$logins = array(
 				'username' => $username,
+				'timestamp' => $current_time,
 				'ip_address' => $ip_adrress,
 				'last_24h_login_id' => $get_last_login_id
 			);

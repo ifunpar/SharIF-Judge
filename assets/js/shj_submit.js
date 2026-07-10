@@ -1,10 +1,3 @@
-/**
- * SharIF Judge
- * @file shj_submit.js
- *
- *     Javascript codes for "Submit" page
- */
-
 $(document).ready(function () {
 	var editor = ace.edit("code_editor");
 
@@ -787,9 +780,9 @@ $(document).ready(function () {
 						metrics.removed +
 						before.origin.inserted +
 						before.origin.removed) /
-					((before.origin.inserted > 0 || before.origin.removed > 0)
+					(before.origin.inserted > 0 || before.origin.removed > 0)
 						? editor.getValue().length
-						: diffText),
+						: diffText,
 			},
 			debugging: {
 				input_change: before.debugging.input_change + metrics.total_input_change,

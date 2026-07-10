@@ -3,16 +3,17 @@
 namespace Adldap\Query;
 
 use Closure;
-use InvalidArgumentException;
-use Illuminate\Support\Arr;
 use Adldap\Adldap;
 use Adldap\Utilities;
 use Adldap\Models\Model;
-use Adldap\Schemas\SchemaInterface;
+use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use Adldap\Schemas\ActiveDirectory;
+use Adldap\Schemas\SchemaInterface;
 use Adldap\Query\Events\QueryExecuted;
 use Adldap\Models\ModelNotFoundException;
 use Adldap\Connections\ConnectionInterface;
+use LDAP\Result;
 
 class Builder
 {
@@ -30,7 +31,7 @@ class Builder
      */
     public $filters = [
         'and' => [],
-        'or' => [],
+        'or'  => [],
         'raw' => [],
     ];
 
@@ -98,6 +99,27 @@ class Builder
     protected $nested = false;
 
     /**
+     * Determines whether the query should be cached.
+     *
+     * @var bool
+     */
+    protected $caching = false;
+
+    /**
+     * How long the query should be cached until.
+     *
+     * @var \DateTimeInterface|null
+     */
+    protected $cacheUntil = null;
+
+    /**
+     * Determines whether the query cache must be flushed.
+     *
+     * @var bool
+     */
+    protected $flushCache = false;
+
+    /**
      * The current connection instance.
      *
      * @var ConnectionInterface
@@ -117,6 +139,13 @@ class Builder
      * @var SchemaInterface
      */
     protected $schema;
+
+    /**
+     * The current cache instance.
+     *
+     * @var Cache|null
+     */
+    protected $cache;
 
     /**
      * Constructor.
@@ -182,6 +211,18 @@ class Builder
     public function getSchema()
     {
         return $this->schema;
+    }
+
+    /**
+     * Sets the cache to store query results.
+     *
+     * @param Cache|null $cache
+     */
+    public function setCache(Cache $cache = null)
+    {
+        $this->cache = $cache;
+
+        return $this;
     }
 
     /**
@@ -338,14 +379,21 @@ class Builder
     {
         $start = microtime(true);
 
-        // Execute the search.
-        $results = $this->connection->{$this->type}(
-            $this->getDn(),
-            $query,
-            $this->getSelects(),
-            $onlyAttributes = false,
-            $this->limit
-        );
+        // Here we will create the execution callback. This allows us
+        // to only execute an LDAP request if caching is disabled
+        // or if no cache of the given query exists yet.
+        $callback = function () use ($query) {
+            return $this->parse($this->run($query));
+        };
+
+        // If caching is enabled and we have a cache instance available,
+        // we will try to retrieve the cached results instead.
+        // Otherwise, we will simply execute the callback.
+        if ($this->caching && $this->cache) {
+            $results = $this->getCachedResponse($this->getCacheKey($query), $callback);
+        } else {
+            $results = $callback();
+        }
 
         // Log the query.
         $this->logQuery($this, $this->type, $this->getElapsedTime($start));
@@ -363,10 +411,98 @@ class Builder
      *
      * @return Paginator
      */
-    public function paginate($perPage = 50, $currentPage = 0, $isCritical = true)
+    public function paginate($perPage = 1000, $currentPage = 0, $isCritical = true)
     {
         $this->paginated = true;
 
+        $start = microtime(true);
+
+        $query = $this->getQuery();
+
+        // Here we will create the pagination callback. This allows us
+        // to only execute an LDAP request if caching is disabled
+        // or if no cache of the given query exists yet.
+        $callback = function () use ($query, $perPage, $isCritical) {
+            return $this->runPaginate($query, $perPage, $isCritical);
+        };
+
+        // If caching is enabled and we have a cache instance available,
+        // we will try to retrieve the cached results instead.
+        if ($this->caching && $this->cache) {
+            $pages = $this->getCachedResponse($this->getCacheKey($query), $callback);
+        } else {
+            $pages = $callback();
+        }
+
+        // Log the query.
+        $this->logQuery($this, 'paginate', $this->getElapsedTime($start));
+
+        // Process & return the results.
+        return $this->newProcessor()->processPaginated($pages, $perPage, $currentPage);
+    }
+
+    /**
+     * Get the cached response or execute and cache the callback value.
+     *
+     * @param string  $key
+     * @param Closure $callback
+     *
+     * @return mixed
+     */
+    protected function getCachedResponse($key, Closure $callback)
+    {
+        if ($this->flushCache) {
+            $this->cache->delete($key);
+        }
+
+        return $this->cache->remember($key, $this->cacheUntil, $callback);
+    }
+
+    /**
+     * Runs the query operation with the given filter.
+     *
+     * @param string $filter
+     *
+     * @return resource
+     */
+    protected function run($filter)
+    {
+        return $this->connection->{$this->type}(
+            $this->getDn(),
+            $filter,
+            $this->getSelects(),
+            $onlyAttributes = false,
+            $this->limit
+        );
+    }
+
+    /**
+     * Runs the paginate operation with the given filter.
+     *
+     * @param string $filter
+     * @param int    $perPage
+     * @param bool   $isCritical
+     *
+     * @return array
+     */
+    protected function runPaginate($filter, $perPage, $isCritical)
+    {
+        return $this->connection->supportsServerControlsInMethods() ?
+            $this->compatiblePaginationCallback($filter, $perPage, $isCritical) :
+            $this->deprecatedPaginationCallback($filter, $perPage, $isCritical);
+    }
+
+    /**
+     * Create a deprecated pagination callback compatible with PHP 7.2.
+     *
+     * @param string $filter
+     * @param int    $perPage
+     * @param bool   $isCritical
+     *
+     * @return array
+     */
+    protected function deprecatedPaginationCallback($filter, $perPage, $isCritical)
+    {
         $pages = [];
 
         $cookie = '';
@@ -374,18 +510,16 @@ class Builder
         do {
             $this->connection->controlPagedResult($perPage, $isCritical, $cookie);
 
-            // Run the search.
-            $resource = @$this->connection->search($this->getDn(), $this->getQuery(), $this->getSelects());
-
-            if ($resource) {
-                $this->connection->controlPagedResultResponse($resource, $cookie);
-
-                // We'll collect each resource result into the pages array.
-                $pages[] = $resource;
+            if (! $resource = $this->run($filter)) {
+                break;
             }
-        } while (! empty($cookie));
 
-        $paginator = $this->newProcessor()->processPaginated($pages, $perPage, $currentPage);
+            // If we have been given a valid resource, we will retrieve the next
+            // pagination cookie to send for our next pagination request.
+            $this->connection->controlPagedResultResponse($resource, $cookie);
+
+            $pages[] = $this->parse($resource);
+        } while (!empty($cookie));
 
         // Reset paged result on the current connection. We won't pass in the current $perPage
         // parameter since we want to reset the page size to the default '1000'. Sending '0'
@@ -393,7 +527,103 @@ class Builder
         // even though that is supposed to be the correct usage.
         $this->connection->controlPagedResult();
 
-        return $paginator;
+        return $pages;
+    }
+
+    /**
+     * Create a compatible pagination callback compatible with PHP 7.3 and greater.
+     *
+     * @param string $filter
+     * @param int    $perPage
+     * @param bool   $isCritical
+     *
+     * @return array
+     */
+    protected function compatiblePaginationCallback($filter, $perPage, $isCritical)
+    {
+        $pages = [];
+
+        // Setup our paged results control.
+        $controls = [
+            LDAP_CONTROL_PAGEDRESULTS => [
+                'oid'        => LDAP_CONTROL_PAGEDRESULTS,
+                'isCritical' => $isCritical,
+                'value'      => [
+                    'size'   => $perPage,
+                    'cookie' => '',
+                ],
+            ],
+        ];
+
+        do {
+            // Update the server controls.
+            $this->connection->setOption(LDAP_OPT_SERVER_CONTROLS, $controls);
+
+            if (! $resource = $this->run($filter)) {
+                break;
+            }
+
+            $errorCode = $dn = $errorMessage = $refs = null;
+
+            // Update the server controls with the servers response.
+            $this->connection->parseResult($resource, $errorCode, $dn, $errorMessage, $refs, $controls);
+
+            $pages[] = $this->parse($resource);
+
+            // Reset paged result on the current connection. We won't pass in the current $perPage
+            // parameter since we want to reset the page size to the default '1000'. Sending '0'
+            // eliminates any further opportunity for running queries in the same request,
+            // even though that is supposed to be the correct usage.
+            $controls[LDAP_CONTROL_PAGEDRESULTS]['value']['size'] = $perPage;
+        } while (!empty($controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie']));
+
+        // After running the query, we will clear the LDAP server controls. This
+        // allows the controls to be automatically reset before each new query
+        // that is conducted on the same connection during each request.
+        $this->connection->setOption(LDAP_OPT_SERVER_CONTROLS, []);
+
+        return $pages;
+    }
+
+    /**
+     * Parses the given LDAP result by retrieving its entries.
+     *
+     * @param resource|Result $result
+     *
+     * @return array
+     */
+    protected function parse($result)
+    {
+        if (is_resource($result) || $result instanceof Result) {
+            $entries = $this->connection->getEntries($result);
+            
+            // Free up memory.
+            $this->connection->freeResult($result);
+        } else {
+            $entries = [];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Returns the cache key.
+     *
+     * @param string $query
+     *
+     * @return string
+     */
+    protected function getCacheKey($query)
+    {
+        $key = $this->connection->getHost()
+            .$this->type
+            .$this->getDn()
+            .$query
+            .implode('', $this->getSelects())
+            .$this->limit
+            .$this->paginated;
+
+        return md5($key);
     }
 
     /**
@@ -428,7 +658,7 @@ class Builder
     {
         $record = $this->first($columns);
 
-        if (! $record) {
+        if (!$record) {
             throw (new ModelNotFoundException())
                 ->setQuery($this->getUnescapedQuery(), $this->getDn());
         }
@@ -450,7 +680,7 @@ class Builder
         try {
             return $this->findByOrFail($attribute, $value, $columns);
         } catch (ModelNotFoundException $e) {
-            return false;
+            return;
         }
     }
 
@@ -487,7 +717,7 @@ class Builder
         }
 
         // If we're not using ActiveDirectory, we can't use ANR. We'll make our own query.
-        if (! is_a($this->schema, ActiveDirectory::class)) {
+        if (!is_a($this->schema, ActiveDirectory::class)) {
             return $this->prepareAnrEquivalentQuery($value)->first($columns);
         }
 
@@ -506,7 +736,7 @@ class Builder
     {
         $this->select($columns);
 
-        if (! is_a($this->schema, ActiveDirectory::class)) {
+        if (!is_a($this->schema, ActiveDirectory::class)) {
             $query = $this;
 
             foreach ($values as $value) {
@@ -528,7 +758,7 @@ class Builder
      */
     protected function prepareAnrEquivalentQuery($value)
     {
-        return $this->orFilter(function (Builder $query) use ($value) {
+        return $this->orFilter(function (self $query) use ($value) {
             $locateBy = [
                 $this->schema->name(),
                 $this->schema->email(),
@@ -583,7 +813,7 @@ class Builder
 
         // Make sure we check if the result is an entry or an array before
         // we throw an exception in case the user wants raw results.
-        if (! $entry instanceof Model && !is_array($entry)) {
+        if (!$entry instanceof Model && !is_array($entry)) {
             throw (new ModelNotFoundException())
                 ->setQuery($this->getUnescapedQuery(), $this->getDn());
         }
@@ -604,7 +834,7 @@ class Builder
         try {
             return $this->findByDnOrFail($dn, $columns);
         } catch (ModelNotFoundException $e) {
-            return false;
+            return;
         }
     }
 
@@ -654,7 +884,7 @@ class Builder
         try {
             return $this->findByGuidOrFail($guid, $columns);
         } catch (ModelNotFoundException $e) {
-            return false;
+            return;
         }
     }
 
@@ -677,7 +907,7 @@ class Builder
         }
 
         return $this->select($columns)->whereRaw([
-            $this->schema->objectGuid() => $guid
+            $this->schema->objectGuid() => $guid,
         ])->firstOrFail();
     }
 
@@ -694,7 +924,7 @@ class Builder
         try {
             return $this->findBySidOrFail($sid, $columns);
         } catch (ModelNotFoundException $e) {
-            return false;
+            return;
         }
     }
 
@@ -750,7 +980,7 @@ class Builder
     {
         $columns = is_array($columns) ? $columns : func_get_args();
 
-        if (! empty($columns)) {
+        if (!empty($columns)) {
             $this->columns = $columns;
         }
 
@@ -855,14 +1085,14 @@ class Builder
             list($value, $operator) = [$operator, '='];
         }
 
-        if (! in_array($operator, Operator::all())) {
+        if (!in_array($operator, Operator::all())) {
             throw new InvalidArgumentException("Invalid where operator: {$operator}");
         }
 
         // We'll escape the value if raw isn't requested.
         $value = $raw ? $value : $this->escape($value);
 
-        $field = $this->escape($field, $ignore = null, 3);
+        $field = $this->escape($field, $ignore = '', 3);
 
         $this->addFilter($boolean, compact('field', 'operator', 'value'));
 
@@ -984,7 +1214,7 @@ class Builder
      */
     public function whereIn($field, array $values)
     {
-        return $this->orFilter(function (Builder $query) use ($field, $values) {
+        return $this->orFilter(function (self $query) use ($field, $values) {
             foreach ($values as $value) {
                 $query->whereEquals($field, $value);
             }
@@ -1280,14 +1510,14 @@ class Builder
      * @param string $type     The type of filter to add.
      * @param array  $bindings The bindings of the filter.
      *
-     * @return $this
-     *
      * @throws InvalidArgumentException
+     *
+     * @return $this
      */
     public function addFilter($type, array $bindings)
     {
         // Here we will ensure we have been given a proper filter type.
-        if (! array_key_exists($type, $this->filters)) {
+        if (!array_key_exists($type, $this->filters)) {
             throw new InvalidArgumentException("Invalid filter type: {$type}.");
         }
 
@@ -1345,7 +1575,7 @@ class Builder
         // ensure we always select the object class and category, as these
         // are used for constructing models. The asterisk indicates that
         // we want all attributes returned for LDAP records.
-        if (! in_array('*', $selects)) {
+        if (!in_array('*', $selects)) {
             $selects[] = $this->schema->objectCategory();
             $selects[] = $this->schema->objectClass();
         }
@@ -1419,8 +1649,7 @@ class Builder
     }
 
     /**
-     * Sets the recursive property to tell the search whether or
-     * not to return the LDAP results in their raw format.
+     * Whether to return the LDAP results in their raw format.
      *
      * @param bool $raw
      *
@@ -1434,8 +1663,7 @@ class Builder
     }
 
     /**
-     * Sets the nested property to tell the Grammar instance whether
-     * or not the current query is already nested.
+     * Whether the current query is nested.
      *
      * @param bool $nested
      *
@@ -1444,6 +1672,25 @@ class Builder
     public function nested($nested = true)
     {
         $this->nested = (bool) $nested;
+
+        return $this;
+    }
+
+    /**
+     * Enables caching on the current query until the given date.
+     *
+     * If flushing is enabled, the query cache will be flushed and then re-cached.
+     *
+     * @param \DateTimeInterface $until When to expire the query cache.
+     * @param bool               $flush Whether to force-flush the query cache.
+     *
+     * @return $this
+     */
+    public function cache(\DateTimeInterface $until = null, $flush = false)
+    {
+        $this->caching = true;
+        $this->cacheUntil = $until;
+        $this->flushCache = $flush;
 
         return $this;
     }
@@ -1459,7 +1706,7 @@ class Builder
      */
     public function escape($value, $ignore = '', $flags = 0)
     {
-        return ldap_escape($value, $ignore, $flags);
+        return ldap_escape((string) $value, $ignore, $flags);
     }
 
     /**
@@ -1658,12 +1905,15 @@ class Builder
     {
         $args = [$query, $time];
 
-        switch($type) {
+        switch ($type) {
             case 'listing':
                 $event = new Events\Listing(...$args);
                 break;
-            case 'read';
+            case 'read':
                 $event = new Events\Read(...$args);
+                break;
+            case 'paginate':
+                $event = new Events\Paginate(...$args);
                 break;
             default:
                 $event = new Events\Search(...$args);

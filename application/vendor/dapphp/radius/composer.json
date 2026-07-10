@@ -5,15 +5,15 @@
     "keywords": ["radius","authentication","authorization","pap","chap","ms-chap","ms-chap v2","rfc2865","rfc1994","rfc2284","rfc2869","rfc2759"],
     "homepage": "https://github.com/dapphp/radius",
     "require": {
-        "php": ">=5.3"
+        "php": ">=5.3 || <= 7.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "dev-master"
+        "phpunit/phpunit": "^4.8"
     },
     "suggest": {
-        "ext-mcrypt": "*"
+        "ext-openssl": "To support hashing required by Pear_CHAP"
     },
-    "license": "LGPL-3.0",
+    "license": "LGPL-3.0-or-later",
     "authors": [
         {
             "name": "Drew Phillips",
@@ -26,6 +26,9 @@
         }
     ],
     "autoload": {
+	"psr-0": {
+            "Crypt_CHAP_": "lib/"
+	},
         "psr-4": {
             "Dapphp\\Radius\\": "src/"
         }

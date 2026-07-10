@@ -28,13 +28,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Password_hash
 {
-	function HashPassword($password)
-	{
-		return password_hash($password, PASSWORD_DEFAULT);
-	}
+	        function HashPassword($password)
+        {
+                return password_hash($password, PASSWORD_DEFAULT);
+        }
 
-	function CheckPassword($password, $stored_hash)
-	{
-		return password_verify($password, $stored_hash);
-	}
+        function CheckPassword($password, $stored_hash)
+        {
+                return password_verify($password, $stored_hash);
+        }
 }
