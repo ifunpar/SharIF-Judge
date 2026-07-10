@@ -156,7 +156,7 @@ $autoload['language'] = array();
 |	$autoload['model'] = array('first_model' => 'first');
 */
 
-$autoload['model'] = array('user', 'settings_model', 'user_model', 'assignment_model', 'logs_model');
+$autoload['model'] = array( 'settings_model', 'user_model', 'assignment_model', 'logs_model');
 
 
 /* End of file autoload.php */

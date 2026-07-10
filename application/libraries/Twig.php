@@ -181,9 +181,11 @@ class Twig
 			)
 		);
 
-		$this->_ci->load->model('user');
-		$this->twig->addGlobal('user', $this->_ci->user);
 
+		if ($this->_ci->db->table_exists('users')) {
+			$this->_ci->load->model('user');
+			$this->twig->addGlobal('user', $this->_ci->user);
+		}
 	}
 }
 
