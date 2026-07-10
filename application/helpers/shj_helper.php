@@ -62,6 +62,19 @@ if ( ! function_exists('time_hhmm') )
 	}
 }
 
+if ( ! function_exists('format_duration'))
+{
+	function format_duration($milliseconds) {
+		$seconds = floor($milliseconds / 1000);
+
+		$hours   = floor($seconds / 3600);
+		$minutes = floor(($seconds % 3600) / 60);
+		$seconds = $seconds % 60;
+
+		return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+	}
+}
+
 
 
 if ( ! function_exists('filetype_to_extension'))
