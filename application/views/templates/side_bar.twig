@@ -49,6 +49,14 @@
 				<span class="sidebar_text" id="submit-label">Submit</span>
 			</a>
 		</li>
+		{% if user.level > 1 %}
+			<li class="color-recording{{ selected=='recording' ? ' selected' }}">
+				<a href="{{ site_url('recording/all') }}" aria-labelledby="recording-label">
+					<i class="fa fa-video-camera fa-lg"></i>
+					<span class="sidebar_text" id="recording-label">Recording</span>
+				</a>
+			</li>
+		{% endif %}
 		<li class="color-final_submissions{{ selected=='final_submissions' ? ' selected' }}">
 			<a href="{{ site_url('submissions/final') }}" aria-labelledby="final-submission-label">
 				<i class="fa fa-map-marker fa-lg"></i>

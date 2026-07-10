@@ -1,0 +1,160 @@
+{#
+ # SharIF Judge
+ # file: recording.twig
+ # author: Andreas Ronaldi <andreasronaldi25@gmail.com>
+ #}
+{% set selected = 'recording' %}
+{% extends 'templates/base.twig' %}
+{% block icon %}fa-video-camera
+{% endblock %}
+{% block title %}Recording
+{% endblock %}
+{% block head_title %}Recording
+{% endblock %}
+
+
+{% block other_assets %}
+	<link rel="stylesheet" type='text/css' href="{{ base_url('assets/styles/recording.css') }}"/>
+
+	<script src={{ base_url('assets/ace/ace.js') }}></script>
+	<script src={{ base_url('assets/ace/ext-language_tools.js') }}></script>
+
+	<script>
+		var rec_path='{{ assignment.id }}/{{ filter_problem }}/{{ filter_user }}/{{ rec_id }}';
+	</script>
+
+	<script src="{{ base_url("assets/chartjs/dist/chart.umd.js") }}"></script>
+	
+	<script type='text/javascript' src="{{ base_url("assets/js/shj_recording.js") }}"></script>
+{% endblock %}
+
+{% block main_content %}
+<div id="main_rec">
+	{% if all_problems|length == 0 %}
+		<p style="text-align: center;">Nothing to show...</p>
+	{% else %}
+		<div id="wrap_selector">
+			<h2 class="title_section title_selector">Problem</h2>
+			<table id="wrap_sel_problem">
+				<tr>
+					{% for one_problem in all_problems %}
+						<td class="sel_problem{{ filter_problem == one_problem.id ? ' selected' }}">
+							<a dir="auto" href="{{ site_url("recording/#{assignment.id}/#{one_problem.id}/#{filter_user}/") }}">{{ one_problem.name }}</a>
+						</td>
+					{% endfor %}
+				</tr>
+			</table>
+
+			<h2 class="title_section title_selector">Username</h2>
+			<div id="wrap_sel_user">
+				<h2 class="title_section title_normal">{{ filter_user }}</h2>
+			</div>
+			<h2 class="title_section title_selector">Status</h2>
+			<h2 id="status_rec" class="title_section title_normal"></h2>
+		</div>
+
+		{% if list_recording is not empty %}
+		<div id="recording_wrap">
+			
+			{# Chart #}
+			<h2 class="title_section">Player</h2>
+			<div id="ide_wrap">
+				<fieldset id="editor_wrap">
+					<legend>Code</legend>
+					<div id="code_editor"></div>
+				</fieldset>
+				<fieldset id="in_wrap">
+					<legend>Input</legend>
+					<textarea id="editor_input" class="in_out" readonly></textarea>
+				</fieldset>
+				<fieldset id="out_wrap">
+					<legend>Output</legend>
+					<textarea id="editor_output" class="in_out" readonly></textarea>
+				</fieldset>
+				<div id="status_wrapper">
+					Status
+				</div>
+			</div>
+
+			{# Player #}
+			<div class="wrap_input_player">
+				{# For Playing Currently #}
+				<button type="button" class="sharif_input" id="rec_btn">Play</button>
+				<span id="timer_player">00:00</span>
+
+				<div class="wrap_range">
+					<input type="range" min="0" max="0" value="0" class="range" id="range_player">
+				</div>
+			</div>
+
+			{# List of saved #}
+			<h2 class="title_section">List Of Session on Recording</h2>
+			<table class="sharif_table">
+				<thead>
+					<tr>
+						<th>Start Time</th>
+						<th>End Time</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody id="tbody_saved">
+				</tbody>
+			</table>
+
+
+			{# Chart #}
+			<h2 class="title_section">Config Chart</h2>
+			<div class="wrap_config_chart">
+				<label for="config_chart_type">Chart Type</label>
+				<select id="config_chart_type" name="config_chart_type">
+					<option value="bar">Bar</option>
+					<option value="line">Line</option>
+				</select> 
+				<label for="config_chart_stack">Stack</label>
+				<input type="checkbox" value="stack" id="config_chart_stack" name="config_chart_stack" checked></input> 
+				<label for="config_chart_divider">Divider<label>
+				<input min="0" value="1" id="config_chart_divider" name="config_chart_divider" type="number"></input>
+				<label for="config_chart_time">Time<label>
+				<select id="config_chart_time" name="config_chart_time"></select>
+			</div>
+
+			<h2 class="title_section">Chart Of Action</h2>
+			<canvas id="recording_chart"></canvas>			
+		</div>
+		
+		<div id="other_recording">
+			<h2 class="title_section" style="margin-bottom: 8px;">Other Recording of {{ filter_user }} in problem {{ filter_problem }}</h2>
+			<table class="sharif_table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Username</th>
+						<th>Submit Time</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for recording in list_recording %}
+						<tr>
+							<td>{{ recording.rec_id }}</td>
+							<td>{{ recording.username }}</td>
+							<td>{{ recording.upload_at }}</td>
+							<td>
+								{% if recording.rec_id == rec_id %}
+								<span class="sel_selected">Selected</span>
+								{% else %}
+								<a dir="auto" href="{{site_url("recording/#{assignment.id}/#{filter_problem}/#{recording.username}/#{recording.rec_id}")}}">See Recording</a>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		{% else %}
+		Nothing Here...
+		{% endif %}
+	{% endif %}
+</div>
+{% endblock %}
+{# main_content #}

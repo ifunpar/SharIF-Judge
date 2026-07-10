@@ -1,0 +1,80 @@
+{#
+ # SharIF Judge
+ # file: recording_list.twig
+ # author: Andreas Ronaldi <andreasronaldi25@gmail.com>
+ #}
+{% set selected = 'recording' %}
+{% extends 'templates/base.twig' %}
+{% block icon %}fa-video-camera
+{% endblock %}
+{% block title %}Recording
+{% endblock %}
+{% block head_title %}Recording
+{% endblock %}
+
+
+{% block other_assets %}
+	<link rel="stylesheet" type='text/css' href="{{ base_url('assets/styles/recording.css') }}"/>
+{% endblock %}
+
+
+{% block main_content %}
+	{% if all_problems|length == 0 %}
+		<p style="text-align: center;">Nothing to show...</p>
+	{% else %}
+		<div id="wrap_selector">
+			<h2 class="title_section title_selector">Problem</h2>
+			<table id="wrap_sel_problem">
+				<tr>
+					<td class="sel_problem{{ filter_problem is null ? ' selected' }}">
+						<a dir="auto" href="{{ site_url('recording/all'~(filter_user?'/user/'~filter_user)) }}">All</a>
+					</td>
+					{% for one_problem in all_problems %}
+						<td class="sel_problem{{ filter_problem == one_problem.id ? ' selected' }}">
+							<a dir="auto" href="{{ site_url('recording/all'~(filter_user?'/user/'~filter_user)~'/problem/'~one_problem.id) }}">{{ one_problem.name }}</a>
+						</td>
+					{% endfor %}
+				</tr>
+			</table>
+		</div>
+
+		<table class="sharif_table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Username</th>
+					<th>Name</th>
+					<th>Problem</th>
+					<th>Insert (max)</th>
+					<th>Remove (max)</th>
+					<th>Code Churn Rate</th>
+					<th>Total Focus</th>
+					<th>Total Execute</th>
+					<th>Duration</th>
+					<th>Submit Time</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			{% for recording in recordings %}
+				<tr>
+					<td> {{ recording.rec_id }} </td>
+					<td> <a dir="auto" href="{{ site_url('recording/all/user/'~recording.username~(filter_problem?'/problem/'~filter_problem)) }}">{{ recording.username }}</a> </td>
+					<td> {{ recording.name }} </td>
+					<td> <a a dir="auto" href="{{ site_url('recording/all'~(filter_user?'/user/'~filter_user)~'/problem/'~recording.problem) }}">{{ recording.problem }} </a> </td>
+					<td> {{ recording.inserted }} ({{ recording.max_inserted }}) </td>
+					<td> {{ recording.removed }} ({{ recording.max_removed }}) </td>
+					<td> {{ recording.cct }} </td>
+					<td> in: {{ recording.total_nav_in }}, out: {{ recording.total_nav_out }}  </td>
+					<td> {{ recording.total_execute }} </td>
+					<td> {{ recording.time }} </td>
+					<td> {{ recording.upload_at }} </td>
+					{# Action #}
+					<td> 
+						<a dir="auto" href="{{site_url("recording/#{assignment.id}/#{recording.problem}/#{recording.username}/#{recording.rec_id}")}}">See Recording</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endif %}
+{% endblock %}
+{# main_content #}
