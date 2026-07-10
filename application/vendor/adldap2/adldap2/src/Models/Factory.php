@@ -7,11 +7,9 @@ use Adldap\Schemas\ActiveDirectory;
 use Adldap\Schemas\SchemaInterface;
 
 /**
- * Class Factory
+ * Class Factory.
  *
  * Creates new LDAP models.
- *
- * @package Adldap\Models
  */
 class Factory
 {
@@ -81,7 +79,7 @@ class Factory
     {
         $model = $this->schema->entryModel();
 
-        return (new $model($attributes, $this->query));
+        return new $model($attributes, $this->query);
     }
 
     /**
@@ -114,6 +112,24 @@ class Factory
             ->setAttribute($this->schema->objectClass(), [
                 $this->schema->top(),
                 $this->schema->organizationalUnit(),
+            ]);
+    }
+
+    /**
+     * Creates a new organizational unit instance.
+     *
+     * @param array $attributes
+     *
+     * @return Organization
+     */
+    public function organization(array $attributes = [])
+    {
+        $model = $this->schema->organizationModel();
+
+        return (new $model($attributes, $this->query))
+            ->setAttribute($this->schema->objectClass(), [
+                $this->schema->top(),
+                $this->schema->organization(),
             ]);
     }
 

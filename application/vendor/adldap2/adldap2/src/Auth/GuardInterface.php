@@ -22,7 +22,7 @@ interface GuardInterface
      * @param string $password   The users LDAP password.
      * @param bool   $bindAsUser Whether or not to bind as the user.
      *
-     * @throws \Adldap\Auth\BindException When re-binding to your LDAP server fails.
+     * @throws \Adldap\Auth\BindException             When re-binding to your LDAP server fails.
      * @throws \Adldap\Auth\UsernameRequiredException When username is empty.
      * @throws \Adldap\Auth\PasswordRequiredException When password is empty.
      *

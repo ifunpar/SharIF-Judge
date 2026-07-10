@@ -11,9 +11,10 @@
     ],
     "minimum-stability": "stable",
     "require": {
-		"dapphp/radius": "^2.5",
+        "php": ">=7.4",
+        "dapphp/radius": "^2.5",
         "phpoffice/phpspreadsheet": "^1.2",
-        "adldap2/adldap2": "^10.0"
+        "adldap2/adldap2": "^10.5"
 	},
     "config": {
         "vendor-dir": "application/vendor"

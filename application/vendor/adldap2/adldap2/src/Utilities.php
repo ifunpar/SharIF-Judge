@@ -57,13 +57,17 @@ class Utilities
      */
     public static function binarySidToString($value)
     {
+        if (empty($value)) {
+            return;
+        }
+
         // Revision - 8bit unsigned int (C1)
         // Count - 8bit unsigned int (C1)
         // 2 null bytes
         // ID - 32bit unsigned long, big-endian order
         $sid = @unpack('C1rev/C1count/x2/N1id', $value);
 
-        if (! isset($sid['id']) || ! isset($sid['rev'])) {
+        if (!isset($sid['id']) || !isset($sid['rev'])) {
             return;
         }
 
@@ -105,7 +109,7 @@ class Utilities
      */
     public static function binaryGuidToString($binGuid)
     {
-        if (trim($binGuid) == '' || is_null($binGuid)) {
+        if ($binGuid === null || trim($binGuid) === '') {
             return;
         }
 
@@ -131,11 +135,11 @@ class Utilities
      */
     public static function stringGuidToHex($string)
     {
-        $hex = '\\' . substr($string, 6, 2) . '\\' . substr($string, 4, 2) . '\\' . substr($string, 2, 2) . '\\' . substr($string, 0, 2);
-        $hex = $hex . '\\' . substr($string, 11, 2) . '\\' . substr($string, 9, 2);
-        $hex = $hex . '\\' . substr($string, 16, 2) . '\\' . substr($string, 14, 2);
-        $hex = $hex . '\\' . substr($string, 19, 2) . '\\' . substr($string, 21, 2);
-        $hex = $hex . '\\' . substr($string, 24, 2) . '\\' . substr($string, 26, 2) . '\\' . substr($string, 28, 2) . '\\' . substr($string, 30, 2) . '\\' . substr($string, 32, 2) . '\\' . substr($string, 34, 2);
+        $hex = '\\'.substr($string, 6, 2).'\\'.substr($string, 4, 2).'\\'.substr($string, 2, 2).'\\'.substr($string, 0, 2);
+        $hex = $hex.'\\'.substr($string, 11, 2).'\\'.substr($string, 9, 2);
+        $hex = $hex.'\\'.substr($string, 16, 2).'\\'.substr($string, 14, 2);
+        $hex = $hex.'\\'.substr($string, 19, 2).'\\'.substr($string, 21, 2);
+        $hex = $hex.'\\'.substr($string, 24, 2).'\\'.substr($string, 26, 2).'\\'.substr($string, 28, 2).'\\'.substr($string, 30, 2).'\\'.substr($string, 32, 2).'\\'.substr($string, 34, 2);
 
         return $hex;
     }
@@ -150,6 +154,21 @@ class Utilities
     public static function encodePassword($password)
     {
         return iconv('UTF-8', 'UTF-16LE', '"'.$password.'"');
+    }
+
+    /**
+     * Salt and hash a password to make its SSHA OpenLDAP version.
+     *
+     * @param string $password The password to create
+     *
+     * @return string
+     */
+    public static function makeSSHAPassword($password)
+    {
+        mt_srand((float) microtime() * 1000000);
+        $salt = pack('CCCC', mt_rand(), mt_rand(), mt_rand(), mt_rand());
+
+        return '{SSHA}'.base64_encode(pack('H*', sha1($password.$salt)).$salt);
     }
 
     /**
@@ -198,7 +217,7 @@ class Utilities
      */
     public static function isValidGuid($guid)
     {
-        return (bool) preg_match('/^([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}$/', $guid);
+        return (bool) preg_match('/^([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}$|^([0-9a-fA-F]{8}-){3}[0-9a-fA-F]{8}$/', $guid);
     }
 
     /**
