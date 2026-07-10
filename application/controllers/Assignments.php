@@ -626,17 +626,17 @@ class Assignments extends CI_Controller
 		$pdf_files = glob($pattern);
 
 		if ( ! $pdf_files )
-			$response = json_encode(array(status=>FALSE));
+			$response = json_encode(array('status'=>FALSE));
 		elseif (!$this->assignment_model->assignment_info($assignment_id)['open'])
-			$response = json_encode(array(status=>FALSE));
+			$response = json_encode(array('status'=>FALSE));
 		elseif	( ! $this->assignment_model->is_participant($this->assignment_model->assignment_info($assignment_id)['participants'],$this->user->username) )
-			$response = json_encode(array(status=>FALSE));
+			$response = json_encode(array('status'=>FALSE));
 		elseif ( shj_now() > $finishtime + $extratime)
-			$response = json_encode(array(status=>FALSE));
+			$response = json_encode(array('status'=>FALSE));
 		elseif ( shj_now() < $starttime)
-			$response = json_encode(array(status=>FALSE));
+			$response = json_encode(array('status'=>FALSE));
 		else
-			$response = json_encode(array(status=>TRUE));
+			$response = json_encode(array('status'=>TRUE));
 
 		echo $response;
 	}
