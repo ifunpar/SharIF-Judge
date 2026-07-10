@@ -116,5 +116,9 @@ define('EDITOR_IN_NAME', "exec_in");
 define('EDITOR_OUT_NAME', "exec_out");
 define('EDITOR_SUBMIT_ID', 0);
 
+define('RECORD_FILE_NAME', "record");
+define('RECORD_FILE_EXT', "json");
+
+
 /* End of file constants.php */
 /* Location: ./application/config/constants.php */

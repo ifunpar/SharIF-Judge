@@ -87,7 +87,37 @@ class Install extends CI_Controller
 			if ( ! $this->dbforge->create_table('submissions', TRUE))
 				show_error("Error creating database table ".$this->db->dbprefix('submissions'));
 
-
+			// create table 'recording'
+			$fields = array(
+				'rec_id' 		=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'upload_at'		=> array('type' => $DATETIME),
+				'assignment' 	=> array('type' => 'SMALLINT', 'constraint' => 4, 'unsigned' => TRUE),
+				'problem'       => array('type' => 'SMALLINT', 'constraint' => 4, 'unsigned' => TRUE),
+				'username'      => array('type' => 'VARCHAR', 'constraint' => 20),
+			
+				'duration'		=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+			
+				'inserted'		=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'removed'		=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'cct'			=> array('type' => 'FLOAT'),
+			
+				'total_input_change'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'total_execute'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				
+				'total_nav_in'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'total_nav_out'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				
+				'max_inserted'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+				'max_removed'	=> array('type' => 'INT', 'constraint' => 11, 'unsigned' => TRUE),
+			);
+			$this->dbforge->add_field($fields);
+			if (! $this->dbforge->create_table('recording', TRUE))
+				show_error("Error creating database table " . $this->db->dbprefix('recording'));
+			// ADD Unique constraint
+			$this->db->query(
+				"ALTER TABLE {$this->db->dbprefix('recording')}
+				ADD CONSTRAINT {$this->db->dbprefix('ruap_unique')} UNIQUE (rec_id, username, assignment, problem);"
+			);	
 
 			// create table 'assignments'
 			$fields = array(

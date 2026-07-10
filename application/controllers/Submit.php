@@ -293,6 +293,31 @@ class Submit extends CI_Controller
 		echo $response;
 	}
 
+		// ------------------------------------------------------------------------
+
+	/**
+	 * Load recording in files from recording file
+	 */
+	public function load_rec($problem_id) {
+		$user_dir = rtrim($this->assignment_root, '/').'/assignment_'.$this->user->selected_assignment['id'].'/p'.$problem_id.'/'.$this->user->username;
+		$file_path = $user_dir.'/'.RECORD_FILE_NAME.'.'.RECORD_FILE_EXT;
+		
+		$this->load->helper('file');
+		if (!file_exists($file_path)){
+			$response = json_encode(array('content'=>'', 'message'=>'No recording file'));
+		}
+		else{
+			$file_content = file_get_contents($file_path);
+			if ($file_content === FALSE){
+				$response = json_encode(array('content'=>'', 'message'=>'Unable to load'));
+			}
+			else{
+				addslashes($file_content);
+				$response = json_encode(array('content'=>$file_content, 'message'=>'Loaded'));
+			}
+		}
+		echo $response;
+	}
 
 	// ------------------------------------------------------------------------
 
@@ -303,26 +328,61 @@ class Submit extends CI_Controller
 		$data = $_POST['code_editor'];
 		$problem_id = $_POST['problem_id'];
 		$language = $_POST['language'];
-		
+		$rec = $_POST['rec_data'];
+		$rec_metrics = $_POST['rec_metrics'];
+
 		$user_dir = rtrim($this->assignment_root, '/').'/assignment_'.$this->user->selected_assignment['id'].'/p'.$problem_id.'/'.$this->user->username;
 		if (!file_exists($user_dir)){
 			mkdir($user_dir, 0700);
 		}
 		$file_path = $user_dir.'/'.EDITOR_FILE_NAME.'.'.EDITOR_FILE_EXT;
 		$input_path = $user_dir.'/'.EDITOR_IN_NAME.'.'.EDITOR_FILE_EXT;
+		
+		$rec_path = $user_dir.'/'.RECORD_FILE_NAME.'.'.RECORD_FILE_EXT;
 
 		$this->load->helper('file');
-		if (!write_file($file_path, $data)){
+		if (!(write_file($file_path, $data) && write_file($rec_path, $rec))){
 			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to save'));
 			echo $response;
 		}
 		else{
 			$response = json_encode(array('status'=>TRUE, 'message'=>'Saved'));
-			if($type === FALSE){
+
+			$this->load->model('recording_model');
+			$this->recording_model->add_recording(array(
+				'rec_id' 		=> 0,
+				'username' 		=> $this->user->username,
+				'assignment' 	=> $this->user->selected_assignment['id'],
+				'problem' 		=> $problem_id,
+				'upload_at'		=> shj_now_str(),
+
+				'duration'		=> $rec_metrics['duration'],
+			
+				'inserted'		=> $rec_metrics['origin']['inserted'],
+				'removed'		=> $rec_metrics['origin']['removed'],
+				'cct'			=> $rec_metrics['cct']['score'],
+			
+				'total_input_change'	=> $rec_metrics['debugging']['input_change'],
+				'total_execute'			=> $rec_metrics['debugging']['execute'],
+				
+				'total_nav_in'	=> $rec_metrics['navigation']['total_in'],
+				'total_nav_out'	=> $rec_metrics['navigation']['total_out'],
+				
+				'max_inserted'	=> $rec_metrics['copyPaste']['max_inserted'],
+				'max_removed'	=> $rec_metrics['copyPaste']['max_removed'],
+			));
+
+			if($type === FALSE){ // If only saved
 				echo $response;
 			}
-			else{
+			else{ // If want to execute/submit
 				$now = shj_now();
+				foreach($this->problems as $item) {
+					if ($item['id'] == $this->input->post('problem_id')) {
+						$this->problem = $item;
+						break;
+					}
+				}
 				if ( $this->queue_model->in_queue($this->user->username,$this->user->selected_assignment['id'], $this->problem['id'])){
 					$response = json_encode(array('status'=>FALSE, 'message'=>'You have already submitted for this problem. Your last submission is still in queue.'));
 					echo $response;
@@ -345,7 +405,7 @@ class Submit extends CI_Controller
 				}
 				else{
 					if($type === 'submit'){
-						$this->_submit($data, $problem_id, $language, $user_dir);
+						$this->_submit($data, $problem_id, $language, $user_dir, $rec_metrics);
 					}
 					else if($type === 'execute'){
 						$editor_input =  $_POST['editor_input'];
@@ -370,12 +430,18 @@ class Submit extends CI_Controller
 	/**
 	 * Add code to queue for judging
 	 */
-	private function _submit($data, $problem_id, $language, $user_dir){
+	private function _submit($data, $problem_id, $language, $user_dir, $rec_metrics = []){
 		$file_type = $this->_language_to_type(strtolower(trim($language)));
 		$file_ext = $this->_language_to_ext(strtolower(trim($language)));
 		$file_name = EDITOR_FILE_NAME;
 		$file_fname = $file_name.'-'.($this->user->selected_assignment['total_submits']+1);
 		$file_path = $user_dir.'/'.$file_fname.'.'.$file_ext;
+
+		$rec_file_name = RECORD_FILE_NAME;
+		$rec_file_fname = $rec_file_name.'-'.($this->user->selected_assignment['total_submits']+1);
+		$rec_file_path = $user_dir.'/'.$rec_file_fname.'.'.RECORD_FILE_EXT;
+
+		$old_file_path = $user_dir.'/'.RECORD_FILE_NAME.'.'.RECORD_FILE_EXT;
 
 		foreach($this->problems as $item)
 			if ($item['id'] == $problem_id)
@@ -384,7 +450,7 @@ class Submit extends CI_Controller
 				break;
 			}
 
-		if (!write_file($file_path, $data)){
+		if (!(write_file($file_path, $data) && rename($old_file_path, $rec_file_path))){
 			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to submit'));
 		}
 		else{
@@ -402,6 +468,32 @@ class Submit extends CI_Controller
 				'pre_score' => 0,
 				'time' => shj_now_str(),
 			);
+
+			$this->load->model('recording_model');
+			$this->recording_model->add_recording(array(
+				'rec_id' 		=> $submit_info['submit_id'],
+				'username' 		=> $submit_info['username'],
+				'assignment' 	=> $submit_info['assignment'],
+				'problem' 		=> $submit_info['problem'],
+				'upload_at'		=> shj_now_str(),
+
+				'duration'		=> $rec_metrics['duration'],
+			
+				'inserted'		=> $rec_metrics['origin']['inserted'],
+				'removed'		=> $rec_metrics['origin']['removed'],
+				'cct'			=> $rec_metrics['cct']['score'],
+			
+				'total_input_change'	=> $rec_metrics['debugging']['input_change'],
+				'total_execute'			=> $rec_metrics['debugging']['execute'],
+				
+				'total_nav_in'	=> $rec_metrics['navigation']['total_in'],
+				'total_nav_out'	=> $rec_metrics['navigation']['total_out'],
+				
+				'max_inserted'	=> $rec_metrics['copyPaste']['max_inserted'],
+				'max_removed'	=> $rec_metrics['copyPaste']['max_removed'],
+			));
+			$this->recording_model->remove_saveonly_recording($submit_info['assignment'], $submit_info['problem'], $submit_info['username']);
+
 			if ($this->problem['is_upload_only'] == 0)
 			{
 				$this->queue_model->add_to_queue($submit_info);
@@ -432,7 +524,7 @@ class Submit extends CI_Controller
 		$output_path = $user_dir.'/'.EDITOR_OUT_NAME.'.'.EDITOR_FILE_EXT;
 
 		if (!write_file($file_path, $data)){
-			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to execute', debug=>$file_path));
+			$response = json_encode(array('status'=>FALSE, 'message'=>'Unable to execute', 'debug'=>$file_path));
 		}
 		else{
 			$submit_info = array(

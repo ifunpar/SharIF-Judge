@@ -211,7 +211,7 @@ $config['directory_trigger']	= 'd'; // experimental not currently in use
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 1;
+$config['log_threshold'] = 4;
 
 /*
 |--------------------------------------------------------------------------
@@ -272,7 +272,7 @@ $config['cache_path'] = '';
 | http://codeigniter.com/user_guide/libraries/sessions.html
 |
 */
-$config['encryption_key'] = 'wL4aT5AHstNS2kDIu7OyRihdYl6Q0UvG';
+$config['encryption_key'] = 'GsqoHYz58PiUEabjlvreAIFLQdh1yBDJ';
 
 /*
 |--------------------------------------------------------------------------
