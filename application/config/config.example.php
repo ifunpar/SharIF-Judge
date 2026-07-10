@@ -307,23 +307,13 @@ $config['encryption_key'] = 'GsqoHYz58PiUEabjlvreAIFLQdh1yBDJ';
 // $config['sess_match_useragent']	= TRUE;
 // $config['sess_time_to_update']	= 300;
 
-
-// CHANGED: 'cookie' is deleted. Use 'files' for now to get the site up.
 $config['sess_driver'] = 'files'; 
-
-// CHANGED: We need a valid path. This uses the system temp directory.
 $config['sess_save_path'] = sys_get_temp_dir(); 
-
 $config['sess_cookie_name'] = 'shjsession';
 $config['sess_expiration'] = 7200;
 $config['sess_expire_on_close'] = FALSE;
-// CHANGED: This is now handled automatically by the driver
 $config['sess_encrypt_cookie'] = FALSE; 
-// CHANGED: These are for the Database driver only. 
-// Since your DB table structure is likely old (CI2 style), 
-// we DISABLE database sessions for now to prevent SQL errors.
 $config['sess_use_database'] = FALSE; 
-// $config['sess_table_name'] = 'sessions';
 $config['sess_match_ip'] = FALSE;
 $config['sess_match_useragent'] = TRUE;
 $config['sess_time_to_update'] = 300;
