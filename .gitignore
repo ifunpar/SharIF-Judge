@@ -4,6 +4,7 @@
 .idea
 application/config/database.php
 application/config/secrets.php
+application/config/config.php
 
 # Ignore Twig Cache Files
 application/cache/Twig/*/
