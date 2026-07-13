@@ -2,9 +2,10 @@
 
 .git
 .idea
+.vscode
+application/config/config.php
 application/config/database.php
 application/config/secrets.php
-application/config/config.php
 
 # Ignore Twig Cache Files
 application/cache/Twig/*/
@@ -21,7 +22,4 @@ tester/moss
 
 # Ignore Testing Assignment
 assignments/
-
-application/logs/*
-system_old/
-logs/*
+logs/
