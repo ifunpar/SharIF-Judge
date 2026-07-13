@@ -11,7 +11,7 @@ class OpenLDAP extends Schema
     {
         return 'uid';
     }
-
+    
     /**
      * {@inheritdoc}
      */
@@ -73,7 +73,7 @@ class OpenLDAP extends Schema
      */
     public function objectClassOu()
     {
-        return 'organizationalUnit';
+        return 'groupofuniquenames';
     }
 
     /**

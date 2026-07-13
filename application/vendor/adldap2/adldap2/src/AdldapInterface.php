@@ -14,9 +14,9 @@ interface AdldapInterface
      * @param string              $name
      * @param ConnectionInterface $connection
      *
-     * @throws \InvalidArgumentException When an invalid type is given as the configuration argument.
-     *
      * @return $this
+     *
+     * @throws \InvalidArgumentException When an invalid type is given as the configuration argument.
      */
     public function addProvider($configuration, $name, ConnectionInterface $connection = null);
 

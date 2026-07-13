@@ -20,8 +20,6 @@ use Symfony\Component\VarDumper\Cloner\Stub;
  * Casts Ds extension classes to array representation.
  *
  * @author Jáchym Toušek <enumag@gmail.com>
- *
- * @final
  */
 class DsCaster
 {

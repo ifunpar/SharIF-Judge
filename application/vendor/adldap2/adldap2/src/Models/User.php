@@ -11,42 +11,19 @@ use Adldap\Models\Attributes\TSPropertyArray;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
- * Class User.
+ * Class User
  *
  * Represents an LDAP user.
+ *
+ * @package Adldap\Models
  */
 class User extends Entry implements Authenticatable
 {
-    use Concerns\HasUserProperties;
-    use Concerns\HasDescription;
-    use Concerns\HasMemberOf;
-    use Concerns\HasLastLogonAndLogOff;
-    use Concerns\HasUserAccountControl;
-
-    /** @var callable|null */
-    private static $passwordStrategy;
-
-    /**
-     * Password will be processed using given callback before saving.
-     *
-     * @param callable $strategy
-     */
-    public static function usePasswordStrategy(callable $strategy)
-    {
-        static::$passwordStrategy = $strategy;
-    }
-
-    /**
-     * Will return user set password strategy or default one.
-     *
-     * @return callable
-     */
-    public static function getPasswordStrategy(): callable
-    {
-        return static::$passwordStrategy ?? function ($password) {
-            return Utilities::encodePassword($password);
-        };
-    }
+    use Concerns\HasUserProperties,
+        Concerns\HasDescription,
+        Concerns\HasMemberOf,
+        Concerns\HasLastLogonAndLogOff,
+        Concerns\HasUserAccountControl;
 
     /**
      * Get the name of the unique identifier for the user.
@@ -75,6 +52,7 @@ class User extends Entry implements Authenticatable
      */
     public function getAuthPassword()
     {
+        return;
     }
 
     /**
@@ -84,6 +62,7 @@ class User extends Entry implements Authenticatable
      */
     public function getRememberToken()
     {
+        return;
     }
 
     /**
@@ -95,6 +74,7 @@ class User extends Entry implements Authenticatable
      */
     public function setRememberToken($value)
     {
+        return;
     }
 
     /**
@@ -104,6 +84,7 @@ class User extends Entry implements Authenticatable
      */
     public function getRememberTokenName()
     {
+        return;
     }
 
     /**
@@ -327,10 +308,6 @@ class User extends Entry implements Authenticatable
     {
         $workstations = $this->getFirstAttribute($this->schema->userWorkstations());
 
-        if ($workstations === null) {
-            return [];
-        }
-
         return array_filter(explode(',', $workstations));
     }
 
@@ -411,9 +388,9 @@ class User extends Entry implements Authenticatable
     /**
      * Returns the formatted timestamp of the bad password date.
      *
-     * @throws \Exception
-     *
      * @return string|null
+     *
+     * @throws \Exception
      */
     public function getBadPasswordDate()
     {
@@ -447,9 +424,9 @@ class User extends Entry implements Authenticatable
     /**
      * Returns the formatted timestamp of the password last set date.
      *
-     * @throws \Exception
-     *
      * @return string|null
+     *
+     * @throws \Exception
      */
     public function getPasswordLastSetDate()
     {
@@ -483,9 +460,9 @@ class User extends Entry implements Authenticatable
     /**
      * Returns the formatted timestamp of the lockout date.
      *
-     * @throws \Exception
-     *
      * @return string|null
+     *
+     * @throws \Exception
      */
     public function getLockoutDate()
     {
@@ -607,13 +584,13 @@ class User extends Entry implements Authenticatable
      * Sets the users thumbnail photo.
      *
      * @param string $data
-     * @param bool   $encode
+     * @param bool $encode
      *
      * @return $this
      */
     public function setThumbnail($data, $encode = true)
     {
-        if ($encode && !base64_decode($data, $strict = true)) {
+        if ($encode && ! base64_decode($data, $strict = true)) {
             // If the string we're given is not base 64 encoded, then
             // we will encode it before setting it on the user.
             $data = base64_encode($data);
@@ -631,7 +608,7 @@ class User extends Entry implements Authenticatable
     {
         $jpeg = $this->getJpegPhoto();
 
-        return is_null($jpeg) ? $jpeg : 'data:image/jpeg;base64,'.base64_encode($jpeg);
+        return is_null($jpeg) ? $jpeg : 'data:image/jpeg;base64,' . base64_encode($jpeg);
     }
 
     /**
@@ -653,7 +630,7 @@ class User extends Entry implements Authenticatable
      */
     public function setJpegPhoto($string)
     {
-        if (!base64_decode($string, $strict = true)) {
+        if (! base64_decode($string, $strict = true)) {
             $string = base64_encode($string);
         }
 
@@ -817,7 +794,7 @@ class User extends Entry implements Authenticatable
     {
         $this->validateSecureConnection();
 
-        $encodedPassword = call_user_func(static::getPasswordStrategy(), $password);
+        $encodedPassword = Utilities::encodePassword($password);
 
         if ($this->exists) {
             // If the record exists, we need to add a batch replace
@@ -867,14 +844,14 @@ class User extends Entry implements Authenticatable
      *
      * Throws an exception on failure.
      *
-     * @param string $oldPassword      The new password
-     * @param string $newPassword      The old password
-     * @param bool   $replaceNotRemove Alternative password change method. Set to true if you're receiving 'CONSTRAINT'
+     * @param string $oldPassword The new password
+     * @param string $newPassword The old password
+     * @param bool $replaceNotRemove Alternative password change method. Set to true if you're receiving 'CONSTRAINT'
      *                                 errors.
      *
-     * @throws UserPasswordPolicyException    When the new password does not match your password policy.
+     * @throws UserPasswordPolicyException When the new password does not match your password policy.
      * @throws UserPasswordIncorrectException When the old password is incorrect.
-     * @throws AdldapException                When an unknown cause of failure occurs.
+     * @throws AdldapException When an unknown cause of failure occurs.
      *
      * @return true
      */
@@ -890,21 +867,21 @@ class User extends Entry implements Authenticatable
             $modifications[] = $this->newBatchModification(
                 $attribute,
                 LDAP_MODIFY_BATCH_REPLACE,
-                [call_user_func(static::getPasswordStrategy(), $newPassword)]
+                [Utilities::encodePassword($newPassword)]
             );
         } else {
             // Create batch modification for removing the old password.
             $modifications[] = $this->newBatchModification(
                 $attribute,
                 LDAP_MODIFY_BATCH_REMOVE,
-                [call_user_func(static::getPasswordStrategy(), $oldPassword)]
+                [Utilities::encodePassword($oldPassword)]
             );
 
             // Create batch modification for adding the new password.
             $modifications[] = $this->newBatchModification(
                 $attribute,
                 LDAP_MODIFY_BATCH_ADD,
-                [call_user_func(static::getPasswordStrategy(), $newPassword)]
+                [Utilities::encodePassword($newPassword)]
             );
         }
 
@@ -915,7 +892,7 @@ class User extends Entry implements Authenticatable
 
         $result = @$this->update();
 
-        if (!$result) {
+        if (! $result) {
             // If the user failed to update, we'll see if we can
             // figure out why by retrieving the extended error.
             $error = $this->query->getConnection()->getExtendedError();
@@ -945,7 +922,7 @@ class User extends Entry implements Authenticatable
      */
     public function isActive()
     {
-        return $this->isEnabled() && !$this->isExpired();
+        return $this->isEnabled() && ! $this->isExpired();
     }
 
     /**
@@ -971,9 +948,9 @@ class User extends Entry implements Authenticatable
     /**
      * Return the expiration date of the user account.
      *
-     * @throws \Exception
-     *
      * @return DateTime|null
+     *
+     * @throws \Exception
      */
     public function expirationDate()
     {

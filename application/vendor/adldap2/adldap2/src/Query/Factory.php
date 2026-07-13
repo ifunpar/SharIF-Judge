@@ -12,6 +12,7 @@ use Adldap\Connections\ConnectionInterface;
  *
  * Constructs new LDAP queries.
  *
+ * @package Adldap\Search
  *
  * @mixin Builder
  */
@@ -37,18 +38,11 @@ class Factory
     protected $base;
 
     /**
-     * The query cache.
-     *
-     * @var Cache
-     */
-    protected $cache;
-
-    /**
      * Constructor.
      *
      * @param ConnectionInterface  $connection The connection to use when constructing a new query.
-     * @param SchemaInterface|null $schema     The schema to use for the query and models located.
-     * @param string               $baseDn     The base DN to use for all searches.
+     * @param SchemaInterface|null $schema The schema to use for the query and models located.
+     * @param string               $baseDn The base DN to use for all searches.
      */
     public function __construct(ConnectionInterface $connection, SchemaInterface $schema = null, $baseDn = '')
     {
@@ -100,20 +94,6 @@ class Factory
     }
 
     /**
-     * Sets the cache for storing query results.
-     *
-     * @param Cache $cache
-     *
-     * @return $this
-     */
-    public function setCache(Cache $cache)
-    {
-        $this->cache = $cache;
-
-        return $this;
-    }
-
-    /**
      * Returns a new query builder instance.
      *
      * @return Builder
@@ -144,7 +124,7 @@ class Factory
     {
         $wheres = [
             [$this->schema->objectClass(), Operator::$equals, $this->schema->objectClassUser()],
-            [$this->schema->objectCategory(), Operator::$equals, $this->schema->objectCategoryPerson()],
+            [$this->schema->objectCategory(), Operator::$equals, $this->schema->objectCategoryPerson()]
         ];
 
         // OpenLDAP doesn't like specifying the omission of user objectclasses
@@ -178,18 +158,6 @@ class Factory
     {
         return $this->where([
             $this->schema->objectClass() => $this->schema->objectClassOu(),
-        ]);
-    }
-
-    /**
-     * Returns a query builder scoped to organizations.
-     *
-     * @return Builder
-     */
-    public function organizations()
-    {
-        return $this->where([
-            $this->schema->objectClass() => $this->schema->objectClassOrganization(),
         ]);
     }
 
@@ -288,10 +256,6 @@ class Factory
      */
     protected function newBuilder()
     {
-        $builder = new Builder($this->connection, $this->newGrammar(), $this->schema);
-
-        $builder->setCache($this->cache);
-
-        return $builder;
+        return new Builder($this->connection, $this->newGrammar(), $this->schema);
     }
 }

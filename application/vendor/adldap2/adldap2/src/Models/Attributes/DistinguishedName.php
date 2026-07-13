@@ -12,11 +12,11 @@ class DistinguishedName
      * @var array
      */
     protected $components = [
-        'cn'  => [],
+        'cn' => [],
         'uid' => [],
-        'ou'  => [],
-        'dc'  => [],
-        'o'   => [],
+        'ou' => [],
+        'dc' => [],
+        'o' => [],
     ];
 
     /**
@@ -52,7 +52,7 @@ class DistinguishedName
         foreach ($this->components as $component => $values) {
             array_map(function ($value) use ($component, &$components) {
                 // Assemble the component and escape the value.
-                $components[] = sprintf('%s=%s', $component, ldap_escape((string) $value, '', 2));
+                $components[] = sprintf('%s=%s', $component, ldap_escape($value, '', 2));
             }, $values);
         }
 
@@ -272,7 +272,7 @@ class DistinguishedName
         $this->validateComponentExists($component);
 
         // We need to make sure the value we're given isn't empty before adding it into our components.
-        if (!empty($value)) {
+        if (! empty($value)) {
             $this->components[$component][] = $value;
         }
     }
@@ -305,7 +305,7 @@ class DistinguishedName
      */
     protected function validateComponentExists($component)
     {
-        if (!array_key_exists($component, $this->components)) {
+        if (! array_key_exists($component, $this->components)) {
             throw new \UnexpectedValueException("The RDN component '$component' does not exist.");
         }
     }

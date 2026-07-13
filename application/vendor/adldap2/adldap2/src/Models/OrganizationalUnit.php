@@ -3,9 +3,11 @@
 namespace Adldap\Models;
 
 /**
- * Class OrganizationalUnit.
+ * Class OrganizationalUnit
  *
  * Represents an LDAP organizational unit.
+ *
+ * @package Adldap\Models
  */
 class OrganizationalUnit extends Entry
 {

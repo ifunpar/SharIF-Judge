@@ -2,8 +2,8 @@
 
 namespace Adldap\Auth;
 
-use Exception;
 use Throwable;
+use Exception;
 use Adldap\Auth\Events\Bound;
 use Adldap\Auth\Events\Failed;
 use Adldap\Auth\Events\Passed;
@@ -14,9 +14,11 @@ use Adldap\Connections\ConnectionInterface;
 use Adldap\Configuration\DomainConfiguration;
 
 /**
- * Class Guard.
+ * Class Guard
  *
  * Binds users to the current connection.
+ *
+ * @package Adldap\Auth
  */
 class Guard implements GuardInterface
 {
@@ -147,10 +149,10 @@ class Guard implements GuardInterface
      *
      * @param string $username
      *
+     * @return string
+     *
      * @throws \Adldap\Configuration\ConfigurationException If account_suffix or account_prefix do not
      *                                                      exist in the providers domain configuration
-     *
-     * @return string
      */
     protected function applyPrefixAndSuffix($username)
     {

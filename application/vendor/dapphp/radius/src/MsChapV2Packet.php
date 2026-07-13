@@ -4,7 +4,7 @@ namespace Dapphp\Radius;
 
 
 /**
- * Class for MS-CHAP-V2 packets encapsulated in EAP packets
+ * Class for MSCHAP v2 packets encapsulated in EAP packets
  *
  */
 class MsChapV2Packet
@@ -16,20 +16,18 @@ class MsChapV2Packet
     const OPCODE_CHANGEPASS = 7;
 
     public $opcode;
-    public $msChapId = 0;
+    public $msChapId;
     public $msLength;
     public $valueSize;
     public $challenge;
     public $response;
     public $name;
-    public $encryptedPwd;
-    public $encryptedHash;
 
     /**
-     * Parse an MS-CHAP-V2 packet into a structure
+     * Parse an MSCHAP v2 packet into a structure
      *
-     * @param string $packet Raw MS-CHAP-V2 packet string
-     * @return bool|MsChapV2Packet The parsed packet structure or false if the packet data is less than 5 bytes
+     * @param string $packet Raw MSCHAP v2 packet string
+     * @return \Dapphp\Radius\MsChapV2Packet The parsed packet structure
      */
     public static function fromString($packet)
     {
@@ -45,18 +43,18 @@ class MsChapV2Packet
         $p->valueSize = ord($packet[4]);
 
         switch($p->opcode) {
-            case self::OPCODE_CHALLENGE: // challenge
+            case 1: // challenge
                 $p->challenge = substr($packet, 5, 16);
                 $p->name      = substr($packet, -($p->msLength + 5 - $p->valueSize - 10));
                 break;
 
-            case self::OPCODE_RESPONSE: // response
+            case 2: // response
                 break;
 
-            case self::OPCODE_SUCCESS: // success
+            case 3: // success
                 break;
 
-            case self::OPCODE_FAILURE: // failure
+            case 4: // failure
                 $p->response = substr($packet, 4);
                 break;
         }
@@ -66,7 +64,7 @@ class MsChapV2Packet
 
     /**
      * Convert a packet structure to a byte string for sending over the wire
-     * @return string  MS-CHAP-V2 packet string
+     * @return string  MSCHAP v2 packet string
      */
     public function __toString()
     {
@@ -92,18 +90,6 @@ class MsChapV2Packet
 
             case self::OPCODE_SUCCESS: // success
                 return chr(3);
-
-            case self::OPCODE_FAILURE: // failure
-                return chr(4);
-
-            case self::OPCODE_CHANGEPASS: // changepass  [RFC2759]
-                $packet .= $this->encryptedPwd;   // 516 Section 8.9
-                $packet .= $this->encryptedHash;  // 16	 Section 8.12
-                $packet .= $this->challenge;      // 16	 Response packet description
-                $packet .= str_repeat("\x00", 8); // 8	 reserved
-                $packet .= $this->response;       // 24	 ntresponse
-                $packet .= "\x00\x00";            // 2	 flags, always 0
-                break;
         }
 
         $length = pack('n', strlen($packet));

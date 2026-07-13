@@ -3,14 +3,16 @@
 namespace Adldap\Models;
 
 /**
- * Class Container.
+ * Class Container
  *
  * Represents an LDAP container.
+ *
+ * @package Adldap\Models
  */
 class Container extends Entry
 {
-    use Concerns\HasDescription;
-    use Concerns\HasCriticalSystemObject;
+    use Concerns\HasDescription,
+        Concerns\HasCriticalSystemObject;
 
     /**
      * Returns the containers system flags integer.

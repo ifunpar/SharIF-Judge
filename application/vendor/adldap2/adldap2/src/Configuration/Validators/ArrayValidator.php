@@ -5,9 +5,11 @@ namespace Adldap\Configuration\Validators;
 use Adldap\Configuration\ConfigurationException;
 
 /**
- * Class ArrayValidator.
+ * Class ArrayValidator
  *
  * Validates that the configuration value is an array.
+ *
+ * @package Adldap\Configuration\Validators
  */
 class ArrayValidator extends Validator
 {
@@ -16,7 +18,7 @@ class ArrayValidator extends Validator
      */
     public function validate()
     {
-        if (!is_array($this->value)) {
+        if (! is_array($this->value)) {
             throw new ConfigurationException("Option {$this->key} must be an array.");
         }
 

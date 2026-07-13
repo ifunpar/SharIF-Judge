@@ -2,10 +2,22 @@
 
 use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
-use Tightenco\Collect\Support\HigherOrderTapProxy;
 use Symfony\Component\VarDumper\VarDumper;
 
 if (! class_exists(Illuminate\Support\Collection::class)) {
+    if (! function_exists('array_wrap')) {
+        /**
+         * If the given value is not an array, wrap it in one.
+         *
+         * @param  mixed  $value
+         * @return array
+         */
+        function array_wrap($value)
+        {
+            return ! is_array($value) ? [$value] : $value;
+        }
+    }
+
     if (! function_exists('collect')) {
         /**
          * Create a collection from the given value.
@@ -26,9 +38,9 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
          * @param  mixed  $value
          * @return mixed
          */
-        function value($value, ...$args)
+        function value($value)
         {
-            return $value instanceof Closure ? $value(...$args) : $value;
+            return $value instanceof Closure ? $value() : $value;
         }
     }
 
@@ -36,9 +48,9 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         /**
          * Get an item from an array or object using "dot" notation.
          *
-         * @param  mixed  $target
-         * @param  string|array|int|null  $key
-         * @param  mixed  $default
+         * @param  mixed   $target
+         * @param  string|array  $key
+         * @param  mixed   $default
          * @return mixed
          */
         function data_get($target, $key, $default = null)
@@ -49,13 +61,7 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
 
             $key = is_array($key) ? $key : explode('.', $key);
 
-            foreach ($key as $i => $segment) {
-                unset($key[$i]);
-
-                if (is_null($segment)) {
-                    return $target;
-                }
-
+            while (($segment = array_shift($key)) !== null) {
                 if ($segment === '*') {
                     if ($target instanceof Collection) {
                         $target = $target->all();
@@ -63,11 +69,7 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
                         return value($default);
                     }
 
-                    $result = [];
-
-                    foreach ($target as $item) {
-                        $result[] = data_get($item, $key);
-                    }
+                    $result = Arr::pluck($target, $key);
 
                     return in_array('*', $key) ? Arr::collapse($result) : $result;
                 }
@@ -85,38 +87,32 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         }
     }
 
-    if (! function_exists('tap')) {
+    if (! function_exists('with')) {
         /**
-         * Call the given Closure with the given value then return the value.
+         * Return the given object. Useful for chaining.
          *
-         * @param  mixed  $value
-         * @param  callable|null  $callback
+         * @param  mixed  $object
          * @return mixed
          */
-        function tap($value, $callback = null)
+        function with($object)
         {
-            if (is_null($callback)) {
-                return new HigherOrderTapProxy($value);
-            }
-
-            $callback($value);
-
-            return $value;
+            return $object;
         }
     }
 
-    if (! function_exists('class_basename')) {
+    if (! function_exists('dd')) {
         /**
-         * Get the class "basename" of the given object / class.
+         * Dump the passed variables and end the script.
          *
-         * @param  string|object  $class
-         * @return string
+         * @param  mixed
+         * @return void
          */
-        function class_basename($class)
+        function dd(...$args)
         {
-            $class = is_object($class) ? get_class($class) : $class;
-
-            return basename(str_replace('\\', '/', $class));
+            foreach ($args as $x) {
+               VarDumper::dump($x);
+            }
+            die(1);
         }
     }
 }

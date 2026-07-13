@@ -41,7 +41,7 @@ interface ConnectionInterface
 
     /**
      * Constructor.
-     *
+     * 
      * @param string|null $name The connection name.
      */
     public function __construct($name = null);
@@ -103,7 +103,7 @@ interface ConnectionInterface
 
     /**
      * Returns the connections name.
-     *
+     * 
      * @return string|null
      */
     public function getName();
@@ -120,7 +120,7 @@ interface ConnectionInterface
      *
      * @link http://php.net/manual/en/function.ldap-get-entries.php
      *
-     * @param resource $searchResult
+     * @param $searchResult
      *
      * @return mixed
      */
@@ -131,7 +131,7 @@ interface ConnectionInterface
      *
      * @link http://php.net/manual/en/function.ldap-count-entries.php
      *
-     * @param resource $searchResult
+     * @param $searchResult
      *
      * @return int
      */
@@ -155,7 +155,7 @@ interface ConnectionInterface
      *
      * @link http://php.net/manual/en/function.ldap-first-entry.php
      *
-     * @param resource $searchResult
+     * @param $searchResult
      *
      * @return mixed
      */
@@ -321,9 +321,9 @@ interface ConnectionInterface
      * @param string $dn
      * @param $filter
      * @param array $fields
-     * @param bool  $onlyAttributes
-     * @param int   $size
-     * @param int   $time
+     * @param bool   $onlyAttributes
+     * @param int    $size
+     * @param int    $time
      *
      * @return mixed
      */
@@ -408,7 +408,7 @@ interface ConnectionInterface
 
     /**
      * Add attribute values to current attributes.
-     *
+     * 
      * @link http://php.net/manual/en/function.ldap-mod-add.php
      *
      * @param string $dn
@@ -456,7 +456,7 @@ interface ConnectionInterface
     public function controlPagedResult($pageSize = 1000, $isCritical = false, $cookie = '');
 
     /**
-     * Retrieve the LDAP pagination cookie.
+     * Retrieve a paginated result response.
      *
      * @link http://php.net/manual/en/function.ldap-control-paged-result-response.php
      *
@@ -466,17 +466,6 @@ interface ConnectionInterface
      * @return mixed
      */
     public function controlPagedResultResponse($result, &$cookie);
-
-    /**
-     * Frees up the memory allocated internally to store the result.
-     *
-     * @link https://www.php.net/manual/en/function.ldap-free-result.php
-     *
-     * @param resource $result
-     *
-     * @return bool
-     */
-    public function freeResult($result);
 
     /**
      * Returns the error number of the last command

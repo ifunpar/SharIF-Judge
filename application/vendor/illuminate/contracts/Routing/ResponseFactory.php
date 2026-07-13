@@ -7,7 +7,7 @@ interface ResponseFactory
     /**
      * Create a new response instance.
      *
-     * @param  array|string  $content
+     * @param  string  $content
      * @param  int  $status
      * @param  array  $headers
      * @return \Illuminate\Http\Response
@@ -26,7 +26,7 @@ interface ResponseFactory
     /**
      * Create a new response for a given view.
      *
-     * @param  string|array  $view
+     * @param  string  $view
      * @param  array  $data
      * @param  int  $status
      * @param  array  $headers
@@ -37,7 +37,7 @@ interface ResponseFactory
     /**
      * Create a new JSON response instance.
      *
-     * @param  mixed  $data
+     * @param  string|array|object  $data
      * @param  int  $status
      * @param  array  $headers
      * @param  int  $options
@@ -49,7 +49,7 @@ interface ResponseFactory
      * Create a new JSONP response instance.
      *
      * @param  string  $callback
-     * @param  mixed  $data
+     * @param  string|array|object  $data
      * @param  int  $status
      * @param  array  $headers
      * @param  int  $options
@@ -60,7 +60,7 @@ interface ResponseFactory
     /**
      * Create a new streamed response instance.
      *
-     * @param  callable  $callback
+     * @param  \Closure  $callback
      * @param  int  $status
      * @param  array  $headers
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
@@ -70,7 +70,7 @@ interface ResponseFactory
     /**
      * Create a new streamed response instance as a file download.
      *
-     * @param  callable  $callback
+     * @param  \Closure  $callback
      * @param  string|null  $name
      * @param  array  $headers
      * @param  string|null  $disposition
@@ -113,7 +113,7 @@ interface ResponseFactory
      * Create a new redirect response to a named route.
      *
      * @param  string  $route
-     * @param  mixed  $parameters
+     * @param  array  $parameters
      * @param  int  $status
      * @param  array  $headers
      * @return \Illuminate\Http\RedirectResponse
@@ -123,8 +123,8 @@ interface ResponseFactory
     /**
      * Create a new redirect response to a controller action.
      *
-     * @param  array|string  $action
-     * @param  mixed  $parameters
+     * @param  string  $action
+     * @param  array  $parameters
      * @param  int  $status
      * @param  array  $headers
      * @return \Illuminate\Http\RedirectResponse

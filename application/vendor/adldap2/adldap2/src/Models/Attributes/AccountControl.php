@@ -70,13 +70,14 @@ class AccountControl
      */
     public function __construct($flag = null)
     {
-        if (!is_null($flag)) {
+        if (! is_null($flag)) {
             $this->apply($flag);
         }
     }
 
     /**
-     * Get the value when casted to string.
+     * Returns the account control integer as a string
+     * when the object is casted as a string.
      *
      * @return string
      */
@@ -86,7 +87,8 @@ class AccountControl
     }
 
     /**
-     * Get the value when casted to int.
+     * Returns the account control integer when
+     * the object is casted as an integer.
      *
      * @return int
      */
@@ -96,37 +98,7 @@ class AccountControl
     }
 
     /**
-     * Add the value to the account control values.
-     *
-     * @param int $value
-     *
-     * @return AccountControl
-     */
-    public function add($value)
-    {
-        // Use the value as a key so if the same value
-        // is used, it will always be overwritten
-        $this->values[$value] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Remove the value from the account control.
-     *
-     * @param int $value
-     *
-     * @return $this
-     */
-    public function remove($value)
-    {
-        unset($this->values[$value]);
-
-        return $this;
-    }
-
-    /**
-     * Extract and apply the flag.
+     * Applies the specified flag.
      *
      * @param int $flag
      */
@@ -303,7 +275,7 @@ class AccountControl
      * The user cannot change the password. This is a permission on the user's object.
      *
      * For information about how to programmatically set this permission, visit the following link:
-     *
+     * 
      * @link http://msdn2.microsoft.com/en-us/library/aa746398.aspx
      *
      * @return AccountControl
@@ -397,17 +369,23 @@ class AccountControl
     }
 
     /**
-     * Get the account control value.
+     * Returns the complete account control value.
      *
      * @return int
      */
     public function getValue()
     {
-        return array_sum($this->values);
+        $total = 0;
+
+        foreach ($this->values as $value) {
+            $total = $total + $value;
+        }
+
+        return $total;
     }
 
     /**
-     * Get the account control flag values.
+     * Returns the account control's values.
      *
      * @return array
      */
@@ -417,7 +395,7 @@ class AccountControl
     }
 
     /**
-     * Set the account control values.
+     * Sets the account control values.
      *
      * @param array $flags
      */
@@ -427,7 +405,7 @@ class AccountControl
     }
 
     /**
-     * Get all possible account control flags.
+     * Returns an array containing all of the allowed user account control flags.
      *
      * @return array
      */
@@ -449,10 +427,26 @@ class AccountControl
 
         for ($i = 0; $i <= 26; $i++) {
             if ((int) $flag & (1 << $i)) {
-                $flags[1 << $i] = 1 << $i;
+                array_push($flags, 1 << $i);
             }
         }
 
         return $flags;
+    }
+
+    /**
+     * Applies the inserted value to the values property array.
+     *
+     * @param int $value
+     *
+     * @return AccountControl
+     */
+    protected function add($value)
+    {
+        // Use the value as a key so if the same value
+        // is used, it will always be overwritten
+        $this->values[$value] = $value;
+
+        return $this;
     }
 }

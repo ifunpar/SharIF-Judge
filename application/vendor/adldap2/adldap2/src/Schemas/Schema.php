@@ -9,7 +9,6 @@ use Adldap\Models\Contact;
 use Adldap\Models\Printer;
 use Adldap\Models\Computer;
 use Adldap\Models\Container;
-use Adldap\Models\Organization;
 use Adldap\Models\OrganizationalUnit;
 use Adldap\Models\ForeignSecurityPrincipal;
 
@@ -287,6 +286,7 @@ abstract class Schema implements SchemaInterface
         return 'FALSE';
     }
 
+
     /**
      * {@inheritdoc}
      */
@@ -516,7 +516,7 @@ abstract class Schema implements SchemaInterface
      */
     public function memberRange($from, $to)
     {
-        return $this->member().";range={$from}-{$to}";
+        return $this->member() . ";range={$from}-{$to}";
     }
 
     /**
@@ -658,14 +658,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function objectClassOrganization()
-    {
-        return 'organization';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function objectClassPrinter()
     {
         return 'printqueue';
@@ -699,9 +691,8 @@ abstract class Schema implements SchemaInterface
             $this->objectClassGroup()                       => $this->groupModel(),
             $this->objectClassContainer()                   => $this->containerModel(),
             $this->objectClassPrinter()                     => $this->printerModel(),
-            $this->objectClassOrganization()                => $this->organizationModel(),
             $this->objectClassOu()                          => $this->organizationalUnitModel(),
-            $this->objectClassForeignSecurityPrincipal()    => $this->foreignSecurityPrincipalModel(),
+            $this->objectClassForeignSecurityPrincipal()    => $this->foreignSecurityPrincipalModel()
         ];
     }
 
@@ -748,14 +739,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function organization()
-    {
-        return 'organization';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function organizationName()
     {
         return 'o';
@@ -783,14 +766,6 @@ abstract class Schema implements SchemaInterface
     public function organizationalUnitModel()
     {
         return OrganizationalUnit::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function organizationModel()
-    {
-        return Organization::class;
     }
 
     /**
@@ -1220,7 +1195,7 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function userObjectClasses(): array
+    public function userObjectClasses() : array
     {
         return [
             $this->top(),

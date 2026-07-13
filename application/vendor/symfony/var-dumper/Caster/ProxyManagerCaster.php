@@ -16,15 +16,10 @@ use Symfony\Component\VarDumper\Cloner\Stub;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
- *
- * @final
  */
 class ProxyManagerCaster
 {
-    /**
-     * @return array
-     */
-    public static function castProxy(ProxyInterface $c, array $a, Stub $stub, bool $isNested)
+    public static function castProxy(ProxyInterface $c, array $a, Stub $stub, $isNested)
     {
         if ($parent = get_parent_class($c)) {
             $stub->class .= ' - '.$parent;

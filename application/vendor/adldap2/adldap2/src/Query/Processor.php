@@ -2,9 +2,10 @@
 
 namespace Adldap\Query;
 
+use InvalidArgumentException;
+use Illuminate\Support\Arr;
 use Adldap\Models\Entry;
 use Adldap\Models\Model;
-use InvalidArgumentException;
 use Adldap\Schemas\SchemaInterface;
 use Adldap\Connections\ConnectionInterface;
 
@@ -33,19 +34,23 @@ class Processor
     public function __construct(Builder $builder)
     {
         $this->builder = $builder;
-        $this->schema = $builder->getSchema();
         $this->connection = $builder->getConnection();
+        $this->schema = $builder->getSchema();
     }
 
     /**
      * Processes LDAP search results and constructs their model instances.
      *
-     * @param array $entries The LDAP entries to process.
+     * @param resource $results
      *
      * @return Collection|array
      */
-    public function process($entries)
+    public function process($results)
     {
+        // Normalize entries. Get entries returns false on failure.
+        // We'll always want an array in this situation.
+        $entries = $this->connection->getEntries($results) ?: [];
+
         if ($this->builder->isRaw()) {
             // If the builder is asking for a raw
             // LDAP result, we can return here.
@@ -54,7 +59,7 @@ class Processor
 
         $models = [];
 
-	if (is_array($entries) && array_key_exists('count', $entries)) {
+        if (Arr::has($entries, 'count')) {
             for ($i = 0; $i < $entries['count']; $i++) {
                 // We'll go through each entry and construct a new
                 // model instance with the raw LDAP attributes.
@@ -90,9 +95,9 @@ class Processor
     {
         $models = [];
 
-        foreach ($pages as $entries) {
+        foreach ($pages as $results) {
             // Go through each page and process the results into an objects array.
-            $models = array_merge($models, $this->process($entries));
+            $models = array_merge($models, $this->process($results));
         }
 
         $models = $this->processSort($models)->toArray();
@@ -111,8 +116,6 @@ class Processor
     {
         $objectClass = $this->schema->objectClass();
 
-        // We need to ensure the record contains an object class to be able to
-        // determine its type. Otherwise, we create a default Entry model.
         if (array_key_exists($objectClass, $attributes) && array_key_exists(0, $attributes[$objectClass])) {
             // Retrieve all of the object classes from the LDAP
             // entry and lowercase them for comparisons.
@@ -153,9 +156,9 @@ class Processor
      */
     public function newModel($attributes = [], $model = null)
     {
-        $model = ($model !== null && class_exists($model) ? $model : $this->schema->entryModel());
+        $model = (class_exists($model) ? $model : $this->schema->entryModel());
 
-        if (!is_subclass_of($model, $base = Model::class)) {
+        if (! is_subclass_of($model, $base = Model::class)) {
             throw new InvalidArgumentException("The given model class '{$model}' must extend the base model class '{$base}'");
         }
 
@@ -200,7 +203,7 @@ class Processor
     {
         $field = $this->builder->getSortByField();
 
-        $flags = $this->builder->getSortByFlags() ?? \SORT_REGULAR;
+        $flags = $this->builder->getSortByFlags();
 
         $direction = $this->builder->getSortByDirection();
 

@@ -13,7 +13,6 @@
  *  - Microsoft Radius server IAS
  *  - Microsoft Windows Server 2016 (Network Policy Server)
  *  - Microsoft Windows Server 2012 R2 (Network Policy Server)
- *  - Microsoft Windows Server 2019 Standard (Network Policy Server)
  *  - Mideye RADIUS server (http://www.mideye.com)
  *  - Radl, a free Radius server for Windows
  *  - RSA SecurID
@@ -177,9 +176,9 @@ class Radius
      * @param string $radiusHost          The RADIUS server hostname or IP address
      * @param string $sharedSecret        The RADIUS server shared secret
      * @param string $radiusSuffix        The username suffix to use when authenticating
-     * @param int $timeout                The timeout (in seconds) to wait for RADIUS responses
-     * @param int $authenticationPort     The port for authentication requests (default = 1812)
-     * @param int $accountingPort         The port for accounting requests (default = 1813)
+     * @param number $timeout             The timeout (in seconds) to wait for RADIUS responses
+     * @param number $authenticationPort  The port for authentication requests (default = 1812)
+     * @param number $accountingPort      The port for accounting requests (default = 1813)
      */
     public function __construct($radiusHost         = '127.0.0.1',
                                 $sharedSecret       = '',
@@ -280,7 +279,7 @@ class Radius
     /**
      * Get the code of the last error.
      *
-     * @return int  The error code
+     * @return number  The error code
      */
     public function getErrorCode()
     {
@@ -302,7 +301,7 @@ class Radius
      *
      * @param bool $enabled  boolean true to enable debugging, anything else to disable it.
      *
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setDebug($enabled = true)
     {
@@ -314,7 +313,7 @@ class Radius
      * Set the hostname or IP address of the RADIUS server to send requests to.
      *
      * @param string $hostOrIp  The hostname or IP address of the RADIUS server
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setServer($hostOrIp)
     {
@@ -326,7 +325,7 @@ class Radius
      * Set the RADIUS shared secret between the client and RADIUS server.
      *
      * @param string $secret  The shared secret
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setSecret($secret)
     {
@@ -349,7 +348,7 @@ class Radius
      * This must be set before setting the username.
      *
      * @param string $suffix  The RADIUS user suffix (e.g. .ppp)
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setRadiusSuffix($suffix)
     {
@@ -363,7 +362,7 @@ class Radius
      * will be appended to the username.
      *
      * @param string $username  The username for authentication
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setUsername($username = '')
     {
@@ -393,7 +392,7 @@ class Radius
      * Do not use this if you will be using CHAP-MD5, MS-CHAP v1 or MS-CHAP v2 passwords.
      *
      * @param string $password  The plain text password for authentication
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setPassword($password)
     {
@@ -456,7 +455,7 @@ class Radius
      * Note: Some servers (e.g. Microsoft NPS) may be configured to require all packets contain this.
      *
      * @param bool $include  Boolean true to include in packets, false otherwise
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setIncludeMessageAuthenticator($include = true)
     {
@@ -474,7 +473,7 @@ class Radius
      * There is generally no need to call this method directly.
      *
      * @param int $nextId  The CHAP packet identifier number
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setChapId($nextId)
     {
@@ -486,7 +485,7 @@ class Radius
     /**
      * Get the CHAP ID and increment the counter.
      *
-     * @return int  The CHAP identifier for the next packet
+     * @return number  The CHAP identifier for the next packet
      */
     public function getChapId()
     {
@@ -500,7 +499,7 @@ class Radius
      * Set the CHAP password (for CHAP authentication).
      *
      * @param string $password  The plaintext password to hash using CHAP.
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setChapPassword($password)
     {
@@ -530,7 +529,7 @@ class Radius
      *
      * @param string  $password  The plaintext password
      * @param string  $challenge The CHAP challenge
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setMsChapPassword($password, $challenge = null)
     {
@@ -556,7 +555,7 @@ class Radius
      * Sets the Network Access Server (NAS) IP address (the RADIUS client IP).
      *
      * @param string $hostOrIp  The hostname or IP address of the RADIUS client
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setNasIPAddress($hostOrIp = '')
     {
@@ -592,8 +591,8 @@ class Radius
     /**
      * Set the physical port number of the NAS which is authenticating the user.
      *
-     * @param int $port  The NAS port
-     * @return self
+     * @param number $port  The NAS port
+     * @return \Dapphp\Radius\Radius
      */
     public function setNasPort($port = 0)
     {
@@ -616,8 +615,8 @@ class Radius
     /**
      * Set the timeout (in seconds) after which we'll give up waiting for a response from the RADIUS server.
      *
-     * @param int $timeout  The timeout (in seconds) for waiting for RADIUS responses.
-     * @return self
+     * @param number $timeout  The timeout (in seconds) for waiting for RADIUS responses.
+     * @return \Dapphp\Radius\Radius
      */
     public function setTimeout($timeout = 5)
     {
@@ -631,7 +630,7 @@ class Radius
     /**
      * Get the current timeout value for RADIUS response packets.
      *
-     * @return int  The timeout
+     * @return number  The timeout
      */
     public function getTimeout()
     {
@@ -641,8 +640,8 @@ class Radius
     /**
      * Set the port number used by the RADIUS server for authentication (default = 1812).
      *
-     * @param int $port  The port for sending Access-Request packets
-     * @return self
+     * @param number $port  The port for sending Access-Request packets
+     * @return \Dapphp\Radius\Radius
      */
     public function setAuthenticationPort($port)
     {
@@ -656,7 +655,7 @@ class Radius
     /**
      * Get the port number used for authentication
      *
-     * @return int  The RADIUS auth port
+     * @return number  The RADIUS auth port
      */
     public function getAuthenticationPort()
     {
@@ -666,8 +665,8 @@ class Radius
     /**
      * Set the port number used by the RADIUS server for accounting (default = 1813)
      *
-     * @param int $port  The port for sending Accounting request packets
-     * @return self
+     * @param number $port  The port for sending Accounting request packets
+     * @return \Dapphp\Radius\Radius
      */
     public function setAccountingPort($port)
     {
@@ -711,7 +710,7 @@ class Radius
     }
 
     /**
-     * For debugging purposes.  Print the attributes from the last received packet as a readable string
+     * For debugging purposes.  Print the attributes from the last received packet as a readble string
      *
      * @return string  The RADIUS packet attributes in human readable format
      */
@@ -731,7 +730,7 @@ class Radius
                                                $vendor[0], $vendor[1], $vendor[2]);
                     }
                 } else {
-                    $attributes = $receivedAttr[1];
+                    $attribues = $receivedAttr[1];
                 }
 
                 $attributes .= "<br>\n";
@@ -767,7 +766,7 @@ class Radius
      * Gets the name of a RADIUS packet from the numeric value.
      * This is only used for debugging functions
      *
-     * @param int $info_index  The packet type number
+     * @param number $info_index  The packet type number
      * @return mixed|string
      */
     public function getRadiusPacketInfo($info_index)
@@ -783,8 +782,8 @@ class Radius
      * Gets the info about a RADIUS attribute identifier such as the attribute name and data type.
      * This is used internally for encoding packets and debug output.
      *
-     * @param int $info_index  The RADIUS packet attribute number
-     * @return array 2 element array with Attribute-Name and Data Type
+     * @param number $info_index  The RADIUS packet attribute number
+     * @return array 2 element array with Attibute-Name and Data Type
      */
     public function getAttributesInfo($info_index)
     {
@@ -798,9 +797,9 @@ class Radius
     /**
      * Set an arbitrary RADIUS attribute to be sent in the next packet.
      *
-     * @param int    $type  The number of the RADIUS attribute
+     * @param number $type  The number of the RADIUS attribute
      * @param mixed  $value  The value of the attribute
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setAttribute($type, $value)
     {
@@ -839,9 +838,9 @@ class Radius
                 case 'I':
                     // Integer, 32 bit unsigned value, most significant octet first.
                     $temp = chr($type) . chr(6) .
-                            chr(intval(($value / (256 * 256 * 256))) % 256) .
-                            chr(intval(($value / (256 * 256))) % 256) .
-                            chr(intval(($value / (256))) % 256) .
+                            chr(intval($value / (256 * 256 * 256)) % 256) .
+                            chr(intval($value / (256 * 256)) % 256) .
+                            chr(intval($value / (256)) % 256) .
                             chr($value % 256);
                     break;
                 case 'D':
@@ -853,9 +852,8 @@ class Radius
             }
         }
 
-        $multiAVP = array(26, 79); // vendor specific and EAP-Message
         if ($index > -1) {
-            if (in_array($type, $multiAVP)) {
+            if ($type == 26) { // vendor specific
                 $this->attributesToSend[$index][] = $temp;
                 $action = 'Added';
             } else {
@@ -863,7 +861,7 @@ class Radius
                 $action = 'Modified';
             }
         } else {
-            $this->attributesToSend[] = (in_array($type, $multiAVP)) ? array($temp) : $temp;
+            $this->attributesToSend[] = ($type == 26 /* vendor specific */) ? array($temp) : $temp;
             $action = 'Added';
         }
 
@@ -905,10 +903,10 @@ class Radius
     /**
      * Adds a vendor specific attribute to the RADIUS packet
      *
-     * @param int    $vendorId  The RADIUS vendor ID
-     * @param int    $attributeType  The attribute number of the vendor specific attribute
+     * @param number $vendorId  The RADIUS vendor ID
+     * @param number $attributeType  The attribute number of the vendor specific attribute
      * @param mixed  $attributeValue The data for the attribute
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function setVendorSpecificAttribute($vendorId, $attributeType, $attributeValue)
     {
@@ -925,11 +923,12 @@ class Radius
     /**
      * Remove an attribute from a RADIUS packet
      *
-     * @param int    $type  The attribute number to remove
-     * @return self
+     * @param number $type  The attribute number to remove
+     * @return \Dapphp\Radius\Radius
      */
     public function removeAttribute($type)
     {
+        $index = -1;
         if (is_array($this->attributesToSend)) {
             foreach($this->attributesToSend as $i => $attr) {
                 if (is_array($attr)) {
@@ -950,7 +949,7 @@ class Radius
     /**
      * Clear all attributes to send so the next packet contains no attributes except ones added after calling this function.
      *
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function resetAttributes()
     {
@@ -961,7 +960,7 @@ class Radius
     /**
      * Remove vendor specific attributes from the request.
      *
-     * @return self
+     * @return \Dapphp\Radius\Radius
      */
     public function resetVendorSpecificAttributes()
     {
@@ -1002,7 +1001,7 @@ class Radius
      *
      * @param string $username  Username to authenticate as
      * @param string $password  Password to authenticate with using PAP
-     * @param int    $timeout   The timeout (in seconds) to wait for a response packet
+     * @param number $timeout   The timeout (in seconds) to wait for a response packet
      * @param string $state     The state of the request (default is Service-Type=1)
      * @return boolean          true if the server sent an Access-Accept packet, false otherwise
      */
@@ -1034,12 +1033,6 @@ class Radius
 
         $conn = $this->sendRadiusRequest($packetData);
         if (!$conn) {
-            $this->debugInfo(sprintf(
-                'Failed to send packet to %s; error: %s',
-                $this->server,
-                $this->getErrorMessage())
-            );
-
             return false;
         }
 
@@ -1047,22 +1040,10 @@ class Radius
         @fclose($conn);
 
         if (!$receivedPacket) {
-            $this->debugInfo(sprintf(
-                'Error receiving response packet from %s; error: %s',
-                $this->server,
-                $this->getErrorMessage())
-            );
-
             return false;
         }
 
         if (!$this->parseRadiusResponsePacket($receivedPacket)) {
-            $this->debugInfo(sprintf(
-                'Bad RADIUS response from %s; error: %s',
-                $this->server,
-                $this->getErrorMessage())
-            );
-
             return false;
         }
 
@@ -1075,59 +1056,9 @@ class Radius
     }
 
     /**
-     * Perform an accessRequest against a list of servers.  Each server must
-     * share the same RADIUS secret.  This is useful if you have more than one
-     * RADIUS server.  This function tries each server until it receives an
-     * Access-Accept or Access-Reject response.  That is, it will try more than
-     * one server in the event of a timeout or other failure.
-     *
-     * @see \Dapphp\Radius\Radius::accessRequest()
-     *
-     * @param array  $serverList  Array of servers to authenticate against
-     * @param string $username    Username to authenticate as
-     * @param string $password    Password to authenticate with using PAP
-     * @param int    $timeout     The timeout (in seconds) to wait for a response packet
-     * @param string $state       The state of the request (default is Service-Type=1)
-     *
-     * @return boolean true if the server sent an Access-Accept packet, false otherwise
-     */
-    public function accessRequestList($serverList, $username = '', $password = '', $timeout = 0, $state = null)
-    {
-        $result = false;
-
-        if (!is_array($serverList)) {
-            $this->errorCode    = 127;
-            $this->errorMessage = sprintf(
-                'server list passed to accessRequestList must be array; %s given', gettype($serverList)
-            );
-
-            return false;
-        }
-
-        $attributes = $this->getAttributesToSend(); // store base attributes
-
-        foreach($serverList as $server) {
-            $this->setServer($server);
-
-            $result = $this->accessRequest($username, $password, $timeout, $state);
-
-            if ($result === true) {
-                break; // success
-            } elseif ($this->getErrorCode() === self::TYPE_ACCESS_REJECT) {
-                break; // access rejected
-            } else {
-                /* timeout or other possible transient error; try next host */
-                $this->attributesToSend = $attributes; // reset base attributes
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Authenticate using EAP-MS-CHAP v2.  This is a 4-way authentication
+     * Authenticate using EAP-MSCHAP v2.  This is a 4-way authentication
      * process that sends an Access-Request, receives an Access-Challenge,
-     * responds with an Access-Request, and finally sends an Access-Request with
+     * responsds with an Access-Request, and finally sends an Access-Request with
      * an EAP success packet if the last Access-Challenge was a success.
      *
      * Windows Server NPS: EAP Type: MS-CHAP v2
@@ -1139,31 +1070,28 @@ class Radius
     public function accessRequestEapMsChapV2($username, $password)
     {
         /*
-         * RADIUS EAP MS-CHAP-V2 Process:
+         * RADIUS EAP MSCHAPv2 Process:
          * > RADIUS ACCESS_REQUEST w/ EAP identity packet
-         * < ACCESS_CHALLENGE w/ MS-CHAP challenge encapsulated in EAP request
+         * < ACCESS_CHALLENGE w/ MSCHAP challenge encapsulated in EAP request
          *   CHAP packet contains auth_challenge value
          *   Calculate encrypted password based on challenge for response
-         * > ACCESS_REQUEST w/ MS-CHAP challenge response, peer_challenge &
+         * > ACCESS_REQUEST w/ MSCHAP challenge response, peer_challenge &
          *   encrypted password encapsulated in an EAP response packet
-         * < ACCESS_CHALLENGE w/ MS-CHAP success or failure in EAP packet.
+         * < ACCESS_CHALLENGE w/ MSCHAP success or failure in EAP packet.
          * > ACCESS_REQUEST w/ EAP success packet if challenge was accepted
          *
          */
 
         $attributes = $this->getAttributesToSend();
 
-
-        // compose and send identity packet as a start of authentication
-        $eapPacket = EAPPacket::identity($username);
-
         $this->clearDataToSend()
              ->clearError()
              ->setPacketType(self::TYPE_ACCESS_REQUEST);
 
         $this->attributesToSend = $attributes;
+
+        $eapPacket = EAPPacket::identity($username);
         $this->setUsername($username)
-             ->removeAttribute(79)
              ->setAttribute(79, $eapPacket)
              ->setIncludeMessageAuthenticator();
 
@@ -1171,9 +1099,7 @@ class Radius
 
         if ($this->errorCode) {
             return false;
-        }
-
-        if ($this->radiusPacketReceived != self::TYPE_ACCESS_CHALLENGE) {
+        } elseif ($this->radiusPacketReceived != self::TYPE_ACCESS_CHALLENGE) {
             $this->errorCode    = 102;
             $this->errorMessage = 'Access-Request did not get Access-Challenge response';
             return false;
@@ -1184,55 +1110,15 @@ class Radius
 
         if ($eap == null) {
             $this->errorCode    = 102;
-            $this->errorMessage = 'EAP packet missing from Radius access challenge packet';
+            $this->errorMessage = 'EAP packet missing from MSCHAP v2 access response';
             return false;
         }
 
         $eap = EAPPacket::fromString($eap);
 
-        // checking what type of EAP-Message we have
-        // if it is a PEAP proposal, we start an EAP fallback
-        if ($eap->type == EAPPacket::TYPE_PEAP_EAP) { // fallback if PEAP
-            $eapId     = $eap->id;
-
-            $eapPacket = EAPPacket::legacyNak(EAPPacket::TYPE_EAP_MS_AUTH, $eapId);
-
-            $this->clearDataToSend()
-                 ->setPacketType(self::TYPE_ACCESS_REQUEST);
-
-            $this->attributesToSend = $attributes;
-            $this->setUsername($username)
-                 ->setAttribute(79, $eapPacket)
-                 ->setIncludeMessageAuthenticator();
-
-            $resp = $this->accessRequest('', '', 0, $state);
-
-            if (!$resp) {
-                return false;
-            }
-
-            $eap = $this->getReceivedAttribute(79);
-
-            if ($eap == null) {
-                $this->errorCode    = 102;
-                $this->errorMessage = 'EAP packet missing from Radius EAP fallback';
-                return false;
-            }
-
-            $eap = EAPPacket::fromString($eap);
-        } elseif ($eap->type == EAPPacket::TYPE_MD5_CHALLENGE) {
-            // EAP type MD5, PPP CHAP protocol w/ MD5
-            $this->removeAttribute(79)
-                ->setChapPassword($password);
-
-            return $this->accessRequest($username);
-        }
-
-        // since we have check that we are not in PEAP method, we should be in EAP
-        // so let's check this and return error if not
         if ($eap->type != EAPPacket::TYPE_EAP_MS_AUTH) {
             $this->errorCode    = 102;
-            $this->errorMessage = 'EAP type is not EAP_MS_AUTH or MD5_CHALLENGE in access response';
+            $this->errorMessage = 'EAP type is not EAP_MS_AUTH in access response';
             return false;
         }
 
@@ -1240,7 +1126,7 @@ class Radius
 
         if (!$chapPacket || $chapPacket->opcode != MsChapV2Packet::OPCODE_CHALLENGE) {
             $this->errorCode    = 102;
-            $this->errorMessage = 'MS-CHAP-V2 access response packet missing challenge';
+            $this->errorMessage = 'MSCHAP v2 access response packet missing challenge';
             return false;
         }
 
@@ -1250,24 +1136,25 @@ class Radius
         $msChapV2   = new \Crypt_CHAP_MSv2;
         $msChapV2->username      = $username;
         $msChapV2->password      = $password;
-        $msChapV2->chapid        = $chapId;
+        $msChapV2->chapid        = $chapPacket->msChapId;
         $msChapV2->authChallenge = $challenge;
 
+        $response = $msChapV2->challengeResponse();
+
         $chapPacket->opcode    = MsChapV2Packet::OPCODE_RESPONSE;
-        $chapPacket->response  = $msChapV2->challengeResponse();
+        $chapPacket->response  = $response;
         $chapPacket->name      = $username;
         $chapPacket->challenge = $msChapV2->peerChallenge;
 
         $eapPacket = EAPPacket::mschapv2($chapPacket, $chapId);
 
         $this->clearDataToSend()
-             ->setPacketType(self::TYPE_ACCESS_REQUEST);
-        $this->attributesToSend = $attributes;
-        $this->setUsername($username)
+             ->setPacketType(self::TYPE_ACCESS_REQUEST)
+             ->setUsername($username)
              ->setAttribute(79, $eapPacket)
              ->setIncludeMessageAuthenticator();
 
-        $this->accessRequest('', '', 0, $state);
+        $resp = $this->accessRequest(null, null, 0, $state);
 
         if ($this->errorCode) {
             return false;
@@ -1277,7 +1164,7 @@ class Radius
 
         if ($eap == null) {
             $this->errorCode    = 102;
-            $this->errorMessage = 'EAP packet missing from MS-CHAP-V2 challenge response';
+            $this->errorMessage = 'EAP packet missing from MSCHAP v2 challenge response';
             return false;
         }
 
@@ -1296,9 +1183,7 @@ class Radius
 
             $err = (!empty($chapPacket->response)) ? $chapPacket->response : 'General authentication failure';
 
-            $pattern = '/E=(\d{1,10}).*R=(\d).*C=([0-9A-Fa-f]{32}).*V=(\d{1,10})/';
-
-            if (preg_match($pattern, $chapPacket->response, $err)) {
+            if (preg_match('/E=(\d+)/', $chapPacket->response, $err)) {
                 switch($err[1]) {
                     case '691':
                         $err = 'Authentication failure, username or password incorrect.';
@@ -1319,10 +1204,6 @@ class Radius
                     case '649':
                         $err = 'No dial in permission';
                         break;
-
-                    case '709':
-                        $err = 'Error changing password';
-                        break;
                 }
             }
 
@@ -1331,215 +1212,26 @@ class Radius
         }
 
         // got a success response - send success acknowledgement
-        $eapPacket = EAPPacket::eapSuccess($chapId + 1);
-        $state     = $this->getReceivedAttribute(24);
+
+        $state      = $this->getReceivedAttribute(24);
+        $chapPacket = new MsChapV2Packet();
+        $chapPacket->opcode = MsChapV2Packet::OPCODE_SUCCESS;
+
+        $eapPacket = EAPPacket::mschapv2($chapPacket, $chapId + 1);
 
         $this->clearDataToSend()
-             ->setPacketType(self::TYPE_ACCESS_REQUEST);
-        $this->attributesToSend = $attributes;
-        $this->setUsername($username)
+             ->setPacketType(self::TYPE_ACCESS_REQUEST)
+             ->setUsername($username)
              ->setAttribute(79, $eapPacket)
              ->setIncludeMessageAuthenticator();
 
-        return $this->accessRequest('', '', 0, $state);
-    }
+        $resp = $this->accessRequest(null, null, 0, $state);
 
-    /**
-     * Allows the peer to change the password on the account specified in the preceding Response packet. The Change-Password
-     * packet should be sent only if the authenticator reports ERROR_PASSWD_EXPIRED (E=648) in the Message field of the
-     * Failure packet. RFC 2759 - 7. Change-Password Packet
-     *
-     * @param string $username The account username
-     * @param string $password The expired password
-     * @param string $newPassword The new password for the account
-     * @return bool true if the password was changed, otherwise false and $this->errorCode and $this->errorMessage are set
-     */
-    public function changePasswordEapMsChapV2($username, $password, $newPassword)
-    {
-        $this->removeAttribute(79);
-        $attributes = $this->getAttributesToSend();
-
-        /*
-        $resp may be:
-            true in case of valid auth (not expired, not disabled, good pwd...)
-            false with chap-opcode=failure and err=648
-            false with other cases
-        */
-        $resp = $this->accessRequestEapMsChapV2($username, $password);
-
-        if ($resp) {
-            $this->errorCode = 3;
-            $this->errorMessage = 'Password must be expired to be changed';
+        if ($resp !== true) {
             return false;
-        }
-
-        if ($this->radiusPacketReceived == self::TYPE_ACCESS_REJECT) {
-            $this->errorCode    = 3;
-            $this->errorMessage = 'Access rejected, invalid account';
-            return false;
-        } elseif ($this->radiusPacketReceived != self::TYPE_ACCESS_CHALLENGE) {
-            $this->errorCode    = 102;
-            $this->errorMessage = 'Access-Request did not get Access-Challenge response';
-            return false;
-        }
-
-        $state = $this->getReceivedAttribute(24);
-        $eap   = $this->getReceivedAttribute(79);
-
-        if ($eap == null) {
-            $this->errorCode    = 102;
-            $this->errorMessage = 'EAP packet missing from Radius access challenge packet';
-            return false;
-        }
-
-        $eap = EAPPacket::fromString($eap);
-
-        if ($eap->type != EAPPacket::TYPE_EAP_MS_AUTH) {
-            $this->errorCode    = 102;
-            $this->errorMessage = 'EAP type is not EAP_MS_AUTH in access response';
-            return false;
-        }
-
-        $chapPacket = MsChapV2Packet::fromString($eap->data);
-
-        // chap response opcode should be OPCODE_FAILURE, other cases are exceptions
-        if (!$chapPacket || $chapPacket->opcode != MsChapV2Packet::OPCODE_FAILURE) {
-            $this->errorCode    = 102;
-            $this->errorMessage = 'Invalid reply from auth server';
-            return false;
-        }
-
-        $err      = (!empty($chapPacket->response)) ? $chapPacket->response : 'General authentication failure';
-        $pattern  = '/E=(\d{1,10}).*R=(\d).*C=([0-9A-Fa-f]{32}).*V=(\d{1,10})/';
-        $pm       = preg_match($pattern, $chapPacket->response, $err);
-
-        if (!$pm) {
-            $this->errorCode    = 102;
-            $this->errorMessage = 'Invalid reply from auth server';
-            return false;
-        }
-
-        if ($err[1] == '648') {
-            $challenge = pack("H*", $err[3]);
         } else {
-            switch($err[1]) {
-                case '691':
-                    $err = 'Authentication failure, username or password incorrect.';
-                    break;
-
-                case '646':
-                    $err = 'Authentication failure, restricted logon hours.';
-                    break;
-
-                case '647':
-                    $err = 'Account disabled';
-                    break;
-
-                case '649':
-                    $err = 'No dial in permission';
-                    break;
-
-                case '709':
-                    $err = 'Error changing password';
-                    break;
-            }
-
-            $this->errorCode    = 3;
-            $this->errorMessage = $err;
-            return false;
+            return true;
         }
-
-        $chapId     = $chapPacket->msChapId + 1;
-
-        $msChapV2   = new \Crypt_CHAP_MSv2;
-        $msChapV2->username      = $username;
-        $msChapV2->password      = $password;
-        $msChapV2->chapid        = $chapId;
-        $msChapV2->authChallenge = $challenge;
-
-        $chapPacket->opcode        = MsChapV2Packet::OPCODE_CHANGEPASS;
-        $chapPacket->msChapId      = $chapId;
-        $chapPacket->name          = $username;
-        $chapPacket->response      = $msChapV2->challengeResponse();
-        $chapPacket->challenge     = $msChapV2->peerChallenge;
-        $chapPacket->encryptedPwd  = $msChapV2->newPasswordEncryptedWithOldNtPasswordHash($newPassword, $password);
-        $chapPacket->encryptedHash = $msChapV2->oldNtPasswordHashEncryptedWithNewNtPasswordHash($newPassword, $password);
-
-        $eapPacketSplit = str_split(EAPPacket::mschapv2($chapPacket, $chapId), 253);
-
-        $this->clearDataToSend()
-             ->setPacketType(self::TYPE_ACCESS_REQUEST);
-        $this->attributesToSend = $attributes;
-        $this->setUsername($username)
-             ->setAttribute(79, $eapPacketSplit[0])
-             ->setAttribute(79, $eapPacketSplit[1])
-             ->setAttribute(79, $eapPacketSplit[2])
-             ->setIncludeMessageAuthenticator();
-
-        $resp = $this->accessRequest('', '', 0, $state);
-
-        if ($this->errorCode) {
-            $this->errorMessage = 'Password change rejected; new password may not meet the password policy requirements';
-            return false;
-        }
-
-        // got a success response - send success acknowledgement
-        $eapPacket = EAPPacket::eapSuccess($chapId + 1);
-
-        $this->clearDataToSend()
-             ->setPacketType(self::TYPE_ACCESS_REQUEST);
-        $this->attributesToSend = $attributes;
-        $this->setUsername($username)
-             ->setAttribute(79, $eapPacket)
-             ->setIncludeMessageAuthenticator();
-
-        // returns true if password changed successfully
-        return $this->accessRequest('', '', 0, $state);
-    }
-
-    /**
-     * Perform a EAP-MS-CHAP v2 4-way authentication against a list of servers.
-     * Each server must share the same RADIUS secret.
-     *
-     * @see \Dapphp\Radius\Radius::accessRequestEapMsChapV2()
-     * @see \Dapphp\Radius\Radius::accessRequestList()
-     *
-     * @param array $serverList Array of servers to authenticate against
-     * @param string $username  The username to authenticate as
-     * @param string $password  The plain text password that will be hashed using MS-CHAPv2
-     * @return boolean          true if negotiation resulted in an Access-Accept packet, false otherwise
-     */
-    public function accessRequestEapMsChapV2List($serverList, $username, $password)
-    {
-        $result = false;
-
-        if (!is_array($serverList)) {
-            $this->errorCode    = 127;
-            $this->errorMessage = sprintf(
-                'server list passed to accessRequestEapMsChapV2List must be array; %s given', gettype($serverList)
-            );
-
-            return false;
-        }
-
-        $attributes = $this->getAttributesToSend(); // store base attributes
-
-        foreach($serverList as $server) {
-            $this->setServer($server);
-
-            $result = $this->accessRequestEapMsChapV2($username, $password);
-
-            if ($result === true) {
-                break; // success
-            } elseif ($this->getErrorCode() === self::TYPE_ACCESS_REJECT) {
-                break; // access rejected
-            } else {
-                /* timeout or other possible transient error; try next host */
-                $this->attributesToSend = $attributes; // reset base attributes
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -1569,10 +1261,9 @@ class Radius
         if ($this->debug) {
             $this->debugInfo(
                 sprintf(
-                    '<b>Packet type %d (%s) sent to %s</b>',
+                    '<b>Packet type %d (%s) sent</b>',
                     $this->radiusPacket,
-                    $this->getRadiusPacketInfo($this->radiusPacket),
-                    $this->server
+                    $this->getRadiusPacketInfo($this->radiusPacket)
                 )
             );
             foreach($this->attributesToSend as $attrs) {
@@ -1764,8 +1455,8 @@ class Radius
     {
         $hasAuthenticator = false;
         $attrContent = '';
+        $len         = 0;
         $offset      = null;
-
         foreach($this->attributesToSend as $i => $attr) {
             $len = strlen($attrContent);
 
@@ -1808,8 +1499,8 @@ class Radius
     /**
      * Set the RADIUS packet identifier that will be used for the next request
      *
-     * @param int    $identifierToSend  The packet identifier to send
-     * @return self
+     * @param number $identifierToSend  The packet identifier to send
+     * @return \Dapphp\Radius\Radius
      */
     public function setNextIdentifier($identifierToSend = 0)
     {
@@ -1823,7 +1514,7 @@ class Radius
     /**
      * Increment the packet identifier and return the number number
      *
-     * @return int     The radius packet id
+     * @return number  The radius packet id
      */
     public function getNextIdentifier()
     {
@@ -1847,7 +1538,7 @@ class Radius
      * There is no need to ever call this function.
      *
      * @param string $requestAuthenticator  The 16 octet request identifier
-     * @return boolean|self false if the authenticator is invalid length, self otherwise
+     * @return boolean|\Dapphp\Radius\Radius
      */
     public function setRequestAuthenticator($requestAuthenticator)
     {
@@ -1901,15 +1592,9 @@ class Radius
     protected function debugInfo($message)
     {
         if ($this->debug) {
-            $msg = date('Y-m-d H:i:s'). ' DEBUG: ';
-            $msg .= $message;
-            $msg .= "<br>\n";
-
-            if (php_sapi_name() == 'cli') {
-                $msg = strip_tags($msg);
-            }
-
-            echo $msg;
+            echo date('Y-m-d H:i:s').' DEBUG: ';
+            echo $message;
+            echo "<br />\n";
             flush();
         }
     }
@@ -1921,28 +1606,26 @@ class Radius
         if (isset($this->attributesInfo[$attributeFormat])) {
             switch ($this->attributesInfo[$attributeFormat][1]) {
                 case 'T':
+                    $value = $rawValue;
+                    break;
                 case 'S':
                     $value = $rawValue;
                     break;
-
                 case 'A':
                     $value = ord(substr($rawValue, 0, 1)) . '.' .
                              ord(substr($rawValue, 1, 1)) . '.' .
                              ord(substr($rawValue, 2, 1)) . '.' .
                              ord(substr($rawValue, 3, 1));
                     break;
-
                 case 'I':
                     $value = (ord(substr($rawValue, 0, 1)) * 256 * 256 * 256) +
                              (ord(substr($rawValue, 1, 1)) * 256 * 256) +
                              (ord(substr($rawValue, 2, 1)) * 256) +
                               ord(substr($rawValue, 3, 1));
                     break;
-
                 case 'D':
                     $value = null;
                     break;
-
                 default:
                     $value = null;
             }

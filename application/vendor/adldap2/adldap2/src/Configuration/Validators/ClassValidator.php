@@ -9,13 +9,13 @@ class ClassValidator extends Validator
     /**
      * Validates the configuration value.
      *
-     * @throws ConfigurationException When the value given fails validation.
-     *
      * @return bool
+     *
+     * @throws ConfigurationException When the value given fails validation.
      */
     public function validate()
     {
-        if (!is_string($this->value) || !class_exists($this->value)) {
+        if (! class_exists($this->value)) {
             throw new ConfigurationException("Option {$this->key} must be a valid class.");
         }
 

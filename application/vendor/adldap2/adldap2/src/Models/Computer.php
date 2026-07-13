@@ -3,17 +3,19 @@
 namespace Adldap\Models;
 
 /**
- * Class Computer.
+ * Class Computer
  *
  * Represents an LDAP computer / server.
+ *
+ * @package Adldap\Models
  */
 class Computer extends Entry
 {
-    use Concerns\HasMemberOf;
-    use Concerns\HasDescription;
-    use Concerns\HasLastLogonAndLogOff;
-    use Concerns\HasUserAccountControl;
-    use Concerns\HasCriticalSystemObject;
+    use Concerns\HasMemberOf,
+        Concerns\HasDescription,
+        Concerns\HasLastLogonAndLogOff,
+        Concerns\HasUserAccountControl,
+        Concerns\HasCriticalSystemObject;
 
     /**
      * Returns the computers operating system.
