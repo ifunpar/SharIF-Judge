@@ -181,11 +181,11 @@ $config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
 | use segment based URLs.
 |
 */
-$config['allow_get_array']		= TRUE;
+$config['allow_get_array'] = TRUE;
 $config['enable_query_strings'] = FALSE;
-$config['controller_trigger']	= 'c';
-$config['function_trigger']		= 'm';
-$config['directory_trigger']	= 'd'; // experimental not currently in use
+$config['controller_trigger'] = 'c';
+$config['function_trigger']	= 'm';
+$config['directory_trigger'] = 'd'; 
 
 /*
 |--------------------------------------------------------------------------
@@ -203,7 +203,7 @@ $config['directory_trigger']	= 'd'; // experimental not currently in use
 |	3 = Informational Messages
 |	4 = All Messages
 |
-| You can also pass in a array with threshold levels to show individual error types
+| You can also pass an array with threshold levels to show individual error types
 |
 | 	array(2) = Debug Messages, without Error Messages
 |
@@ -211,7 +211,7 @@ $config['directory_trigger']	= 'd'; // experimental not currently in use
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 4;
+$config['log_threshold'] = 0;
 
 /*
 |--------------------------------------------------------------------------
@@ -295,18 +295,6 @@ $config['encryption_key'] = 'GsqoHYz58PiUEabjlvreAIFLQdh1yBDJ';
 | 'sess_time_to_update'		= how many seconds between CI refreshing Session Information
 |
 */
-// $config['sess_driver']			= 'cookie';
-// $config['sess_valid_drivers']	= array();
-// $config['sess_cookie_name']		= 'shjsession';
-// $config['sess_expiration']		= 7200;
-// $config['sess_expire_on_close']	= FALSE;
-// $config['sess_encrypt_cookie']	= TRUE;
-// $config['sess_use_database']	= TRUE;
-// $config['sess_table_name']		= 'sessions';
-// $config['sess_match_ip']		= FALSE;
-// $config['sess_match_useragent']	= TRUE;
-// $config['sess_time_to_update']	= 300;
-
 $config['sess_driver'] = 'files'; 
 $config['sess_save_path'] = sys_get_temp_dir(); 
 $config['sess_cookie_name'] = 'shjsession';

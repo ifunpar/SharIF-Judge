@@ -63,9 +63,7 @@
 |  $autoload['packages'] = array(APPPATH.'third_party', '/usr/local/shared');
 |
 */
-
 $autoload['packages'] = array();
-
 
 /*
 | -------------------------------------------------------------------
@@ -81,7 +79,6 @@ $autoload['packages'] = array();
 
 $autoload['libraries'] = array('database', 'form_validation', 'twig');
 
-
 /*
 | -------------------------------------------------------------------
 |  Auto-load Drivers
@@ -94,9 +91,7 @@ $autoload['libraries'] = array('database', 'form_validation', 'twig');
 |
 |	$autoload['drivers'] = array('session', 'cache');
 */
-
 $autoload['drivers'] = array('session');
-
 
 /*
 | -------------------------------------------------------------------
@@ -106,9 +101,7 @@ $autoload['drivers'] = array('session');
 |
 |	$autoload['helper'] = array('url', 'file');
 */
-
 $autoload['helper'] = array('url','form','shj');
-
 
 /*
 | -------------------------------------------------------------------
@@ -122,9 +115,7 @@ $autoload['helper'] = array('url','form','shj');
 | config files.  Otherwise, leave it blank.
 |
 */
-
 $autoload['config'] = array();
-
 
 /*
 | -------------------------------------------------------------------
@@ -138,9 +129,7 @@ $autoload['config'] = array();
 | "codeigniter_lang.php" would be referenced as array('codeigniter');
 |
 */
-
 $autoload['language'] = array();
-
 
 /*
 | -------------------------------------------------------------------
@@ -155,9 +144,7 @@ $autoload['language'] = array();
 |
 |	$autoload['model'] = array('first_model' => 'first');
 */
-
 $autoload['model'] = array( 'settings_model', 'user_model', 'assignment_model', 'logs_model');
-
 
 /* End of file autoload.php */
 /* Location: ./application/config/autoload.php */
