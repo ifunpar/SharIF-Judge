@@ -449,27 +449,14 @@ class Assignment_model extends CI_Model
 		foreach ($submissions as $i => $item) {
 			$delay = strtotime($item['time'])-$finish_time;
 			ob_start();
-			$coefficient = "error"; // Default to error first for safety
-
+			$coefficient = "error"; 
 			try {
-				// Try to run the rule
-				//$eval_result = eval($item['late_rule']);
 				$eval_result = eval($new_late_rule);
-				
-				// If eval ran successfully, it returns NULL (usually), 
-				// unless the code explicitly returns something.
-				// But importantly: if we are here, NO syntax error occurred.
-				
-				// Check if the variable $coefficient was actually set by the eval'd code
 				if (isset($coefficient) && is_numeric($coefficient)) {
-					// Success! The rule calculated a number.
 				} else {
 					$coefficient = "error";
 				}
-
 			} catch (ParseError $e) {
-				// CATCH THE CRASH HERE
-				// This handles the "Syntax error, unexpected token ';'"
 				$coefficient = "error"; 
 				log_message('error', 'Late Rule Syntax Error: ' . $e->getMessage());
 			}

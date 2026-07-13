@@ -39,7 +39,6 @@ class Logs_model extends CI_Model
 			}
 		}
 		$current_time = shj_now_str();
-		
 		$result = $this->db->query("SELECT * FROM shj_logins WHERE username='".$username."' AND ip_address!='".$ip_adrress."' ORDER BY timestamp DESC")->row();
 		if ($result === NULL) {
 			$logins = array(

@@ -293,7 +293,7 @@ class Submit extends CI_Controller
 		echo $response;
 	}
 
-		// ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	/**
 	 * Load recording in files from recording file
@@ -318,6 +318,7 @@ class Submit extends CI_Controller
 		}
 		echo $response;
 	}
+
 
 	// ------------------------------------------------------------------------
 
@@ -508,7 +509,6 @@ class Submit extends CI_Controller
 		}
 		echo $response;
 	}
-
 
 	// ------------------------------------------------------------------------
 
