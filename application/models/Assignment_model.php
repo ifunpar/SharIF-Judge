@@ -449,7 +449,6 @@ class Assignment_model extends CI_Model
 		foreach ($submissions as $i => $item) {
 			$delay = strtotime($item['time'])-$finish_time;
 			ob_start();
-			$coefficient = "error"; 
 			try {
 				$eval_result = eval($new_late_rule);
 				if (!isset($coefficient) && !is_numeric($coefficient)) $coefficient = "error";
