@@ -45,23 +45,9 @@ class Assignments extends CI_Controller
 			$delay = shj_now()-strtotime($item['finish_time']);;
 			ob_start();
 			try {
-				// Try to run the rule
 				$eval_result = eval($item['late_rule']);
-				
-				// If eval ran successfully, it returns NULL (usually), 
-				// unless the code explicitly returns something.
-				// But importantly: if we are here, NO syntax error occurred.
-				
-				// Check if the variable $coefficient was actually set by the eval'd code
-				if (isset($coefficient) && is_numeric($coefficient)) {
-					// Success! The rule calculated a number.
-				} else {
-					$coefficient = "error";
-				}
-
+				if (!isset($coefficient) && !is_numeric($coefficient)) $coefficient = "error";
 			} catch (ParseError $e) {
-				// CATCH THE CRASH HERE
-				// This handles the "Syntax error, unexpected token ';'"
 				$coefficient = "error"; 
 				log_message('error', 'Late Rule Syntax Error: ' . $e->getMessage());
 			}

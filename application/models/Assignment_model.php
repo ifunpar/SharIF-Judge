@@ -452,10 +452,7 @@ class Assignment_model extends CI_Model
 			$coefficient = "error"; 
 			try {
 				$eval_result = eval($new_late_rule);
-				if (isset($coefficient) && is_numeric($coefficient)) {
-				} else {
-					$coefficient = "error";
-				}
+				if (!isset($coefficient) && !is_numeric($coefficient)) $coefficient = "error";
 			} catch (ParseError $e) {
 				$coefficient = "error"; 
 				log_message('error', 'Late Rule Syntax Error: ' . $e->getMessage());
