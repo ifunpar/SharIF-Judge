@@ -53,7 +53,7 @@ class Assignment_model extends CI_Model
 			'start_time' => date('Y-m-d H:i:s', strtotime($this->input->post('start_time'))),
 			'finish_time' => date('Y-m-d H:i:s', strtotime($this->input->post('finish_time'))),
 			'extra_time' => $extra_time*60,
-			'late_rule' => $this->input->post('late_rule',FALSE),
+			'late_rule' => $this->input->post('late_rule'),
 			'participants' => $this->input->post('participants'),
 			'archived_assignment' => $archived_assignment
 		);
