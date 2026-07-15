@@ -38,7 +38,7 @@ class Logs_model extends CI_Model
 				$this->db->delete('logins');
 			}
 		}
-		$current_time = shj_now_str();
+		$current_time = shj_now_str(); //Add timestamp for log tables => previously doesn't exist and causes issues in installation process
 		$result = $this->db->query("SELECT * FROM shj_logins WHERE username='".$username."' AND ip_address!='".$ip_adrress."' ORDER BY timestamp DESC")->row();
 		if ($result === NULL) {
 			$logins = array(
