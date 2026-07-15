@@ -226,12 +226,12 @@ switch (ENVIRONMENT)
 
 	if (($_temp = realpath($system_path)) !== FALSE)
 	{
-		$system_path = $_temp.'/';
+		$system_path = $_temp.DIRECTORY_SEPARATOR;
 	}
 	else
 	{
 		// Ensure there's a trailing slash
-				$system_path = strtr(
+		$system_path = strtr(
 			rtrim($system_path, '/\\'),
 			'/\\',
 			DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR
@@ -243,7 +243,7 @@ switch (ENVIRONMENT)
 	{
 		header('HTTP/1.1 503 Service Unavailable.', TRUE, 503);
 		echo 'Your system folder path does not appear to be set correctly. Please open the following file and correct this: '.pathinfo(__FILE__, PATHINFO_BASENAME);
-		exit(3); // EXIT_* constants not yet defined; 3 is EXIT_CONFIG.
+		exit(3); // EXIT_CONFIG
 	}
 
 /*
