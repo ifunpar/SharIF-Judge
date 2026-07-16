@@ -8,7 +8,7 @@
  *
  */
 
-define('SHJ_VERSION','1.5.2');
+define('SHJ_VERSION','1.5.3');
 
 /**
  * Cloudflare adaptor.
@@ -81,7 +81,7 @@ if(isset($_SERVER['HTTP_CF_CONNECTING_IP']) && isset($_SERVER['HTTP_CF_RAY'])){
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'production');
 
 /*
  *---------------------------------------------------------------

@@ -180,10 +180,11 @@ class Twig
 				}
 			)
 		);
-
-		$this->_ci->load->model('user');
-		$this->twig->addGlobal('user', $this->_ci->user);
-
+		// Add safety check to make sure Twig doesn't autoload non-existing table in installation
+		if ($this->_ci->db->table_exists('users')) {
+			$this->_ci->load->model('user');
+			$this->twig->addGlobal('user', $this->_ci->user);
+		}
 	}
 }
 

@@ -449,8 +449,13 @@ class Assignment_model extends CI_Model
 		foreach ($submissions as $i => $item) {
 			$delay = strtotime($item['time'])-$finish_time;
 			ob_start();
-			if ( eval($new_late_rule) === FALSE )
-				$coefficient = "error";
+			try {
+				$eval_result = eval($new_late_rule);
+				if (!isset($coefficient) && !is_numeric($coefficient)) $coefficient = "error";
+			} catch (ParseError $e) {
+				$coefficient = "error"; 
+				log_message('error', 'Late Rule Syntax Error: ' . $e->getMessage());
+			}
 			if (!isset($coefficient))
 				$coefficient = "error";
 			ob_end_clean();

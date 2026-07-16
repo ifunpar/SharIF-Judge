@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url']	= 'http://localhost/';
+$config['base_url']	= ($_SERVER['HTTPS']?"https":"http") . '://'.$_SERVER['HTTP_HOST'] . '/';
 
 /*
 |--------------------------------------------------------------------------
@@ -529,4 +529,4 @@ $config['rewrite_short_tags'] = FALSE;
 | Comma-separated:	'10.0.1.200,192.168.5.0/24'
 | Array:		array('10.0.1.200', '192.168.5.0/24')
 */
-$config['proxy_ips'] = '';
+$config['proxy_ips'] = '127.0.0.1,::1,172.16.0.0/12,192.168.0.0/16,10.0.0.0/8'; //Added ip v4 and v6 range for local and global (internet) subnet + docker default subnet -> for 24 hours ip log
